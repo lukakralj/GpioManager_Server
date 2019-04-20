@@ -1,0 +1,16 @@
+{
+  "name": "smart-home",
+  "version": "1.0.0",
+  "description": "Server side of the application that will be running on the DragonBoard.",
+  "main": "src/main.js",
+  "scripts": {
+    "eslint": "eslint",
+    "start": "node src/main.js",
+    "test": "nodemon --exec \"nyc --reporter=html --reporter=text mocha --recursive\""
+  },
+  "author": "Luka Kralj",
+  "license": "MIT",
+  "devDependencies": {
+    "eslint": "^5.16.0"
+  }
+}
