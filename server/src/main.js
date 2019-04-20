@@ -1,6 +1,6 @@
 /**
  * 
- * @module server
+ * @module 
  * @author Luka Kralj
  * @version 1.0
  */
