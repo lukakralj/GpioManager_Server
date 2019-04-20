@@ -12,5 +12,10 @@
   "license": "MIT",
   "devDependencies": {
     "eslint": "^5.16.0"
+  },
+  "dependencies": {
+    "dateformat": "^3.0.3",
+    "express": "^4.16.4",
+    "socket.io": "^2.2.0"
   }
 }
