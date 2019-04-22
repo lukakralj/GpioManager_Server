@@ -7,7 +7,17 @@
  */
 
 const app = require('express')();
-const server = require('http').Server(app);
+const fs = require('fs');
+const path = require("path");
+
+const key = fs.readFileSync(path.resolve('key.pem')); // path relative to where npm start was called from
+const cert = fs.readFileSync(path.resolve('cert.pem'));
+
+const server = require('http').Server({// TODO: use https and make client work with it
+    key: key,
+    cert: cert
+}, app);
+
 const io = require('socket.io')(server);
 const logger = require('./util/logger');
 const config = require('../config/config.json');
@@ -35,5 +45,5 @@ io.on('connection', (socket) => {
     socket.on("msg", (msg) => {
         console.log("Received: " + msg);
         socket.emit("res", "all good");
-    })
+    });
 });

@@ -1,0 +1,11 @@
+To generate a self-signed certificate:
+openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes
+
+
+Country Name (2 letter code) [AU]:UK
+State or Province Name (full name) [Some-State]:Narnia
+Locality Name (eg, city) []:London
+Organization Name (eg, company) [Internet Widgits Pty Ltd]:Luka Kralj
+Organizational Unit Name (eg, section) []:
+Common Name (e.g. server FQDN or YOUR name) []:
+Email Address []:luka.kralj2@gmail.com

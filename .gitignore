@@ -1,3 +1,8 @@
+# Certificates
+cert.pem 
+key.pem 
+
+
 # Created by https://www.gitignore.io/api/c++,node,linux,visualstudio,visualstudiocode
 # Edit at https://www.gitignore.io/?templates=c++,node,linux,visualstudio,visualstudiocode
 
