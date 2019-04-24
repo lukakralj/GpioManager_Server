@@ -1,5 +1,7 @@
 /**
  * This module provides the socket.io endpoint for remote access.
+ * It enables external communication to the server, which is executing all
+ * other subtasks.
  * 
  * @module 
  * @author Luka Kralj
@@ -25,10 +27,10 @@ const config = require('../config/config.json');
 logger.info("Server has started.");
 
 logger.info("Starting authenticator...")
-const authenticator = require('./util/authenticator');
+//const authenticator = require('./util/authenticator');
 logger.info("Authenticator has started.")
 
-logger.info("Server's public key is:" + authenticator.getServerPublicKey());
+//logger.info("Server's public key is:" + authenticator.getServerPublicKey());
 
 server.listen(config.port, () => {
     logger.info("Listening on port: " + config.port + "...");

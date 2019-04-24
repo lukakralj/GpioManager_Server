@@ -61,7 +61,7 @@
     </div>
 
     <script>
-        var socket = io.connect('http://localhost:3265', { secure: true });
+        var socket = io('http://193.61.203.171:3265');
         function test() {
             console.log("ok");
             socket.emit("msg", "helloooo");
