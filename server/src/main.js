@@ -9,16 +9,7 @@
  */
 
 const app = require('express')();
-const fs = require('fs');
-const path = require("path");
-
-const key = fs.readFileSync(path.resolve('key.pem')); // path relative to where npm start was called from
-const cert = fs.readFileSync(path.resolve('cert.pem'));
-
-const server = require('http').Server({// TODO: use https and make client work with it
-    key: key,
-    cert: cert
-}, app);
+const server = require('http').Server(app);
 
 const io = require('socket.io')(server);
 const logger = require('./util/logger');
@@ -27,14 +18,14 @@ const config = require('../config/config.json');
 logger.info("Server has started.");
 
 logger.info("Starting authenticator...")
-//const authenticator = require('./util/authenticator');
+const authenticator = require('./util/authenticator');
 logger.info("Authenticator has started.")
-
-//logger.info("Server's public key is:" + authenticator.getServerPublicKey());
 
 server.listen(config.port, () => {
     logger.info("Listening on port: " + config.port + "...");
 });
+
+let adminToken = undefined;
 
 io.on('connection', (socket) => {
     logger.info(`Socket ${socket.id} connected`);
@@ -44,8 +35,19 @@ io.on('connection', (socket) => {
         logger.info(`Socket ${socket.id} disconnected`);
     });
 
-    socket.on("msg", (msg) => {
-        console.log("Received: " + msg);
-        socket.emit("res", "all good");
+    socket.on("key", async (clientKey) => {
+        adminToken = await authenticator.registerNewUsername("admin", clientKey);
+
+        socket.emit("keyRes", authenticator.getServerPublicKey());
+    });
+
+    socket.on("msg", async (msg) => {
+        console.log("Received encoded: " + msg);
+        const decoded = await authenticator.decryptMessage(msg);
+        console.log("Decrypted: " + decoded);
+
+        const res = await authenticator.encryptMessage(adminToken, "all good ");
+
+        socket.emit("res", res);
     });
 });

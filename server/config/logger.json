@@ -2,7 +2,7 @@
     "compact": true,
     "timeStamp": false,
     "consoleOutput": true,
-    "fileOutput": true,
+    "fileOutput": false,
     "colorize": true,
     "outputFilePath": "./logs/"
 }

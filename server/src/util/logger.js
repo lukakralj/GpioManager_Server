@@ -46,7 +46,7 @@ const defaultOptions = {   //default options for the use of the module
     compact: true,
     timeStamp: true,
     consoleOutput: true,
-    fileOutput: true,
+    fileOutput: false,
     colorize: true,
     outputFilePath: "./logs/"
 }

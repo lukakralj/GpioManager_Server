@@ -19,19 +19,27 @@ module.exports = {
     removeUser
 }
 
+//const NodeRSA = require('node-rsa');
+//const key = new NodeRSA();
+
 const tokenGenerator = require('./token-generator');
 const crypto = require('crypto');
 const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
     modulusLength: 4096,
     publicKeyEncoding: {
         type: 'spki',
-        format: "pem"
+        format: "der"
     },
     privateKeyEncoding: {
         type: 'pkcs8',
         format: 'pem'
     }
 });
+
+console.log("\n\nprivate:\n");
+console.log(privateKey.toString('base64'));
+console.log("\n\npublic:\n")
+console.log(publicKey.toString('base64'));
 
 /**
  * {
@@ -52,7 +60,7 @@ const ACCESS_TOKEN_VALIDITY_DAYS = 10;
  * @returns {object} RSA public key.
  */
 function getServerPublicKey() {
-    return publicKey;
+    return publicKey.toString('base64');
 }
 
 /**
@@ -64,7 +72,10 @@ function getServerPublicKey() {
  */
 function encryptMessage(token, msg) {
     const buffer = Buffer.from(msg);
-    const encrypted = crypto.publicEncrypt(accessTokens[token].publicKey, buffer);
+    //const clientKey = crypto.createPublicKey(Buffer.from(accessTokens[token].publicKey, 'base64').toString('base64'));
+    const clientKey = "-----BEGIN PUBLIC KEY-----\n" + accessTokens[token].publicKey + "-----END PUBLIC KEY-----";
+    console.log(clientKey)
+    const encrypted = crypto.publicEncrypt(clientKey, buffer);
     return encrypted.toString('base64');
 }
 
@@ -179,9 +190,11 @@ async function verifyToken(accessToken) {
 * @returns {string} A login token for this user.
 */
 async function registerNewUsername(username, userPublicKey) {
-    const token = tokenGenerator.generateLoginToken();
+    const token = tokenGenerator.generateAccessToken();
     const expires = new Date();
     expires.setDate(expires.getDate() + ACCESS_TOKEN_VALIDITY_DAYS);
+    console.log("user public key:");
+    console.log(userPublicKey);
     accessTokens[token] = { username: username, expires: expires, publicKey: userPublicKey };
 
     return token;
