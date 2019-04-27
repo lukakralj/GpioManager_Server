@@ -14,15 +14,13 @@ module.exports = {
     decryptMessage,
     verifyPassword,
     generateNewHash,
-    registerNewUsername,
+    registerNewUserSession,
     verifyToken,
-    removeUser
+    removeUserSession
 }
 
-//const NodeRSA = require('node-rsa');
-//const key = new NodeRSA();
-
 const tokenGenerator = require('./token-generator');
+const logger = require('./logger');
 const crypto = require('crypto');
 const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
     modulusLength: 4096,
@@ -36,10 +34,10 @@ const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
     }
 });
 
-console.log("\n\nprivate:\n");
-console.log(privateKey.toString('base64'));
-console.log("\n\npublic:\n")
-console.log(publicKey.toString('base64'));
+logger.log("\n\nprivate:\n");
+logger.log(privateKey.toString('base64'));
+logger.log("\n\npublic:\n")
+logger.log(publicKey.toString('base64'));
 
 /**
  * {
@@ -72,10 +70,15 @@ function getServerPublicKey() {
  */
 function encryptMessage(token, msg) {
     const buffer = Buffer.from(msg);
-    //const clientKey = crypto.createPublicKey(Buffer.from(accessTokens[token].publicKey, 'base64').toString('base64'));
     const clientKey = "-----BEGIN PUBLIC KEY-----\n" + accessTokens[token].publicKey + "-----END PUBLIC KEY-----";
-    console.log(clientKey)
-    const encrypted = crypto.publicEncrypt(clientKey, buffer);
+    let encrypted = undefined;
+    try {
+        encrypted = crypto.publicEncrypt(clientKey, buffer);
+    }
+    catch (err) {
+        logger.error(err);
+        return undefined;
+    }
     return encrypted.toString('base64');
 }
 
@@ -88,7 +91,14 @@ function encryptMessage(token, msg) {
  */
 function decryptMessage(msg) {
     const buffer = Buffer.from(msg, "base64");
-    const decrypted = crypto.privateDecrypt(privateKey, buffer);
+    let decrypted = undefined;
+    try {
+        decrypted = crypto.privateDecrypt(privateKey, buffer);
+    }
+    catch (err) {
+        logger.error(err);
+        return undefined;
+    }
     return decrypted.toString("utf8");
 }
 
@@ -155,7 +165,7 @@ function generateNewHash(password) {
  * @returns {boolean} True if passwords match, false if they do not.
  */
 function verifyPassword(attempt, hashed, savedSalt, savedIterations) {
-    return hashed == generateHash(attempt, savedSalt, savedIterations);
+    return hashed === generateHash(attempt, savedSalt, savedIterations);
 }
 
 /**
@@ -189,12 +199,10 @@ async function verifyToken(accessToken) {
 * @param {object} userPublicKey User's public key to encrypt messages with.
 * @returns {string} A login token for this user.
 */
-async function registerNewUsername(username, userPublicKey) {
+async function registerNewUserSession(username, userPublicKey) {
     const token = tokenGenerator.generateAccessToken();
     const expires = new Date();
     expires.setDate(expires.getDate() + ACCESS_TOKEN_VALIDITY_DAYS);
-    console.log("user public key:");
-    console.log(userPublicKey);
     accessTokens[token] = { username: username, expires: expires, publicKey: userPublicKey };
 
     return token;
@@ -206,7 +214,7 @@ async function registerNewUsername(username, userPublicKey) {
  * @param {string} accessToken Token used for identification.
  * @returns {boolean} True if token successfully deleted, false if invalid token.
  */
-async function removeUser(accessToken) {
+async function removeUserSession(accessToken) {
     if (await verifyToken(accessToken)) {
         delete accessTokens[accessToken];
         return true;
