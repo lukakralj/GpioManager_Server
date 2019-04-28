@@ -231,12 +231,3 @@ async function verifyToken(socket, responseCode, accessToken){
     }
     return username;
 }
-
-
-process.stdin.resume(); 
-process.stdin.on('data',function(chunk){ // called on each line of input
-  const line=chunk.toString().replace(/\n/,'\\n');
-  console.log('STDIN:received line:'+line);
-}).on('end',function(){ // called when stdin closes (via ^D)
-  console.log('STDIN:closed');
-});
