@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include "../lib/GpioProcessor.h"
+#include "GpioProcessor.h"
 using namespace std;
 
 GpioProcessor* gpioProcessor = nullptr;
