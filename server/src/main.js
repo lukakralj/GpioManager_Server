@@ -233,13 +233,10 @@ async function verifyToken(socket, responseCode, accessToken){
 }
 
 
-process.stdin.setEncoding('utf8');
-
-while (true) {
-    process.stdin.on('readable', () => {
-        const chunk = process.stdin.read();
-        if (chunk !== null) {
-          process.stdout.write(`Received in stdin: ${chunk}`);
-        }
-      });
-}
+process.stdin.resume(); 
+process.stdin.on('data',function(chunk){ // called on each line of input
+  const line=chunk.toString().replace(/\n/,'\\n');
+  console.log('STDIN:received line:'+line);
+}).on('end',function(){ // called when stdin closes (via ^D)
+  console.log('STDIN:closed');
+});
