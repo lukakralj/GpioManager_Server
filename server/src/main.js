@@ -231,3 +231,15 @@ async function verifyToken(socket, responseCode, accessToken){
     }
     return username;
 }
+
+
+process.stdin.setEncoding('utf8');
+
+while (true) {
+    process.stdin.on('readable', () => {
+        const chunk = process.stdin.read();
+        if (chunk !== null) {
+          process.stdout.write(`Received in stdin: ${chunk}`);
+        }
+      });
+}
