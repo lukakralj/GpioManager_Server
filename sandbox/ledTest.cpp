@@ -7,6 +7,14 @@ using namespace std;
 GpioProcessor* gpioProcessor = nullptr;
 Gpio* ledPin = nullptr;
 
+void toggleLed(string&);
+void usePin(string&);
+void printHelp();
+vector<string> parseInput(string&);
+void trim(string&);
+void ltrim(string&);
+void rtrim(string&);
+
 /*
 CLI to turn an LED on Dragonboard on and off.
 */
@@ -50,7 +58,7 @@ int main() {
 		else {
 			cout << "Invalid command." << endl;
 		}
-	} while (finish);
+	} while (!finish);
 
 	gpioProcessor->cleanPins();
 	delete (gpioProcessor);
