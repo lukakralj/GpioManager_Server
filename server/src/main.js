@@ -17,11 +17,9 @@ const io = require('socket.io')(server);
 const logger = require('./util/logger');
 const config = require('../config/config.json');
 const errCodes = require('./err-codes');
+const authenticator = require('./util/authenticator');
 
 logger.info("Server has started.");
-logger.info("Starting authenticator...")
-const authenticator = require('./util/authenticator');
-logger.info("Authenticator has started.")
 
 
 //----- SETUP ----
@@ -48,7 +46,7 @@ io.on('connection', (socket) => {
      * Login to obtain an access token.
      * @param {string} msg Encrypted JSON of format {username: string, password: string, clientKey: string (base64)}
      */
-    socket.io("login", async (msg) => {
+    socket.on("login", async (msg) => {
         const resCode = "loginRes";
         msg = await decryptMessage(socket, resCode);
         if (!msg) return;
@@ -81,7 +79,7 @@ io.on('connection', (socket) => {
         const resCode = "msgRes";
         const processed = await processIncomingMsg(socket, resCode, msg, []);
         if (!processed) return;
-
+        logger.info("Received: " + processed.msg.text); 
         sendMessage(socket, resCode, processed.msg.accessToken, { status: "OK", msg: "All good" });
     });
 

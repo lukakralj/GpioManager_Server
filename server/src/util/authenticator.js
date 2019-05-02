@@ -9,9 +9,6 @@
  */
 
 module.exports = {
-    getServerPublicKey,
-    encryptMessage,
-    decryptMessage,
     verifyPassword,
     generateNewHash,
     registerNewUserSession,
@@ -22,22 +19,6 @@ module.exports = {
 const tokenGenerator = require('./token-generator');
 const logger = require('./logger');
 const crypto = require('crypto');
-const { publicKey, privateKey } = crypto.generateKeyPairSync('rsa', {
-    modulusLength: 4096,
-    publicKeyEncoding: {
-        type: 'spki',
-        format: "der"
-    },
-    privateKeyEncoding: {
-        type: 'pkcs8',
-        format: 'pem'
-    }
-});
-
-logger.log("\n\nprivate:\n");
-logger.log(privateKey.toString('base64'));
-logger.log("\n\npublic:\n")
-logger.log(publicKey.toString('base64'));
 
 /**
  * {
@@ -52,55 +33,6 @@ logger.log(publicKey.toString('base64'));
 const accessTokens = {}
 const ACCESS_TOKEN_VALIDITY_DAYS = 10;
 
-/**
- * Return the public key for the server.
- * 
- * @returns {object} RSA public key.
- */
-function getServerPublicKey() {
-    return publicKey.toString('base64');
-}
-
-/**
- * Encrypt the message for the user which identifies with this token.
- * 
- * @param {string} token User's access token.
- * @param {string} msg Message to encrypt.
- * @returns{string} Message encrypted as base64 string.
- */
-function encryptMessage(token, msg) {
-    const buffer = Buffer.from(msg);
-    const clientKey = "-----BEGIN PUBLIC KEY-----\n" + accessTokens[token].publicKey + "-----END PUBLIC KEY-----";
-    let encrypted = undefined;
-    try {
-        encrypted = crypto.publicEncrypt(clientKey, buffer);
-    }
-    catch (err) {
-        logger.error(err);
-        return undefined;
-    }
-    return encrypted.toString('base64');
-}
-
-/**
- * Decrypt the message that was sent to the server. The message should have
- * been encrypted with the server's current public key.
- * 
- * @param {string} msg Message encrypted as base64 string.
- * @returns {string} Decrypted message in UTF-8 encoding.
- */
-function decryptMessage(msg) {
-    const buffer = Buffer.from(msg, "base64");
-    let decrypted = undefined;
-    try {
-        decrypted = crypto.privateDecrypt(privateKey, buffer);
-    }
-    catch (err) {
-        logger.error(err);
-        return undefined;
-    }
-    return decrypted.toString("utf8");
-}
 
 /**
  * Produce random iterations.
