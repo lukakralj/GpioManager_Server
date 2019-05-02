@@ -20,14 +20,15 @@ const memesCmd = "curl https://www.memedroid.com/memes/top/week/";
 execute();
 
 async function execute() {
-    const publicIP = undefined;
-    const localIP = undefined;
+    let publicIP = undefined;
+    let localIP = undefined;
     do {
         publicIP = await cmdOutput(publicIpCmd);
         localIP = await cmdOutput(localIpCmd);
     } while(publicIP == undefined || localIP == undefined);
 
-    url = getUrl();
+    let url = await getUrl();
+    console.log(url);
     if (url == undefined) {
         url = "Oops... no meme today :/";
     }
@@ -42,7 +43,7 @@ async function execute() {
 </head>
 <body>
 ${url}<br><br>
-Local IP: ${localIP}
+Local IP: ${localIP}<br>
 Public IP: ${publicIP}
 </body>
 </html>
@@ -51,6 +52,7 @@ Public IP: ${publicIP}
     let sent = false;
     do {
         sent = await sendEmail(html);
+        await sleep(5000);
     }
     while (!sent);
 }
@@ -94,20 +96,21 @@ async function getUrl() {
     const jpegs = matchAll(page, /"https:\/\/([^\"\']*)jpeg"/g).toArray();
     let url = undefined;
     const i = randInt(0, 3);
+
     if (i == 0) {
         // use jpeg
-        if (jpegs.length() == 0) {
+        if (jpegs.length == 0) {
             i++;
         }
         else {
-            url = "https://" + jpegs[randInt(0, jpegs.length())] + "jpeg";
+            url = "https://" + jpegs[randInt(0, jpegs.length)] + "jpeg";
         }
     }
 
     if (i != 0) {
         // use gif
-        if (jpegs.length() != 0) {
-            url = "https://" + gifs[randInt(0, gifs.length())] + "gif"; 
+        if (gifs.length != 0) {
+            url = "https://" + gifs[randInt(0, gifs.length)] + "gif"; 
         }
     }
     return url;

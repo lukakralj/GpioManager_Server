@@ -1,8 +1,8 @@
 {
     "transporter": {
-        "service": "Yandex",
+        "service": "Yahoo",
         "auth": {
-            "user": "luka.kralj@yandex.com",
+            "user": "luka.kralj@yahoo.com",
             "pass": "jan30.xed"
         }
     }
