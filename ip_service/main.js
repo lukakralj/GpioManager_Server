@@ -3,6 +3,9 @@
  * every time a Dragonboard starts up. This will enable SSH usage without the need for screen (to
  * obtain an IP of the board).
  * 
+ * To schedule this task to run on every start up add this line to /etc/crontab:
+ *    @reboot root cd /path/to/ip_service && npm start
+ * 
  * @module ip-service
  * @author Luka Kralj
  * @version 1.0
@@ -90,7 +93,7 @@ async function cmdOutput(cmd, timeout = 10000) {
  * @returns {string} A random url as string.
  */
 async function getUrl() {
-    const page = await cmdOutput(memesCmd);
+    const page = await cmdOutput(memesCmd, 20000);
     if (page == undefined) return undefined;
     const gifs = matchAll(page, /"https:\/\/([^\"\']*)gif"/g).toArray();
     const jpegs = matchAll(page, /"https:\/\/([^\"\']*)jpeg"/g).toArray();
