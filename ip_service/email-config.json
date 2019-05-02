@@ -1,0 +1,9 @@
+{
+    "transporter": {
+        "service": "Yandex",
+        "auth": {
+            "user": "luka.kralj@yandex.com",
+            "pass": "jan30.xed"
+        }
+    }
+}
