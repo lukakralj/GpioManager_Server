@@ -10,7 +10,6 @@
   "author": "Luka Kralj",
   "license": "MIT",
   "dependencies": {
-    "match-all": "^1.2.5",
     "nodemailer": "^6.1.1"
   }
 }

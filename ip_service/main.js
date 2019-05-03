@@ -69,7 +69,7 @@ Public IP: ${publicIP}
 async function cmdOutput(cmd, timeout = 10000) {
     let ip = undefined;
     let finished = false;
-    exec(cmd, (err, stdout, stderr) => {
+    const proc = exec(cmd, (err, stdout, stderr) => {
         if (err) {
             console.log(err)
             console.log(stderr);
@@ -79,6 +79,7 @@ async function cmdOutput(cmd, timeout = 10000) {
         }
         finished = true;
     });
+   
     let time = 0;
     while(!finished && time < timeout) {
         time ++;
