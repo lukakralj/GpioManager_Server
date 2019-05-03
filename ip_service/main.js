@@ -14,7 +14,6 @@
 const nodeMailer = require("nodemailer");
 const email_config = require('./email-config.json');
 const exec = require('child_process').exec;
-const matchAll = require("match-all");
 
 const publicIpCmd = "curl ifconfig.me";
 const localIpCmd = "hostname -I";
@@ -95,28 +94,53 @@ async function cmdOutput(cmd, timeout = 10000) {
 async function getUrl() {
     const page = await cmdOutput(memesCmd, 20000);
     if (page == undefined) return undefined;
-    const gifs = matchAll(page, /"https:\/\/([^\"\']*)gif"/g).toArray();
-    const jpegs = matchAll(page, /"https:\/\/([^\"\']*)jpeg"/g).toArray();
+
+    const gifRegex = /"https:\/\/([^\"\']*)gif"/g;
+    const jpegRegex = /"https:\/\/([^\"\']*)jpeg"/g;
+
+    const gifs = matchAll(gifRegex, page);
+    const jpegs = matchAll(jpegRegex, page);
+
     let url = undefined;
     const i = randInt(0, 3);
 
-    if (i == 0) {
+    if (i == 0 || gifs.length == 0) {
         // use jpeg
         if (jpegs.length == 0) {
             i++;
         }
         else {
-            url = "https://" + jpegs[randInt(0, jpegs.length)] + "jpeg";
+            url = jpegs[randInt(0, jpegs.length)];
+            url = url.substring(1, url.length - 1)
         }
     }
 
     if (i != 0) {
         // use gif
         if (gifs.length != 0) {
-            url = "https://" + gifs[randInt(0, gifs.length)] + "gif"; 
+            url = gifs[randInt(0, gifs.length)]
+            url = url.substring(1, url.length - 1)
         }
     }
     return url;
+}
+
+/**
+ * Get all matches in a string.
+ * 
+ * @param {RegEx} regExp Regular expression to match.
+ * @param {string} str String we are matching in.
+ * @returns {array} Array of all the matches.
+ */
+function matchAll(regExp, str) {
+    const matches = [];
+    while (true) {
+        const match = regExp.exec(str);
+        if (match === null) break;
+        // Add capture of group 1 to `matches`
+        matches.push(match[0]);
+    }
+    return matches;
 }
 
 /**
