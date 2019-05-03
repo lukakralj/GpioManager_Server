@@ -44,7 +44,8 @@ async function execute() {
 <title>Dragonboard IPs</title>
 </head>
 <body>
-${url}<br><br>
+<a href="#">
+${url}</a><br><br>
 Local IP: ${localIP}<br>
 Public IP: ${publicIP}
 </body>
