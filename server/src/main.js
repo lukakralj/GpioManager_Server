@@ -48,14 +48,16 @@ io.on('connection', (socket) => {
      */
     socket.on("login", async (msg) => {
         const resCode = "loginRes";
-        msg = await decryptMessage(socket, resCode);
+        msg = await decryptMessage(socket, resCode, msg);
         if (!msg) return;
 
         try {
-            msg = JSON.parse(msg);
-            for (const key in ["username", "password", "clientKey"]) {
-                if (!msg.hasOwnProperty(key)) {
-                    throw new Error("Missing key (" + key + ") in: " + JSON.stringify(msg));
+            // TODO: uncomment if using encyption
+            //msg = JSON.parse(msg);
+            const keys = ["username", "password", "clientKey"];
+            for (const i in keys) {
+                if (!msg.hasOwnProperty(keys[i])) {
+                    throw new Error("Missing key (" + keys[i] + ") in: " + JSON.stringify(msg));
                 }
             }
         }
@@ -135,9 +137,9 @@ async function checkJsonKeys(socket, resCode, msg, keys, accessToken = undefined
         if (!msg.hasOwnProperty("accessToken")) {
             return await verifyToken(socket, resCode, undefined);
         }
-        for (const key in keys) {
-            if (!msg.hasOwnProperty(key)) {
-                throw new Error("Missing key (" + key + ") in: " + JSON.stringify(msg));
+        for (const i in keys) {
+            if (!msg.hasOwnProperty(keys[i])) {
+                throw new Error("Missing key (" + keys[i] + ") in: " + JSON.stringify(msg));
             }
         }
         return msg;
