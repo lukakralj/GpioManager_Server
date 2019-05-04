@@ -109,9 +109,10 @@ io.on('connection', (socket) => {
  * @param {array} keys Keys that need to be present in the message.
  */
 async function processIncomingMsg(socket, resCode, msg, keys) {
-    msg = await decryptMessage(socket, resCode, msg);
+    // TODO: uncomment if using encryption
+    //msg = await decryptMessage(socket, resCode, msg);
     if (!msg) return undefined;
-    msg = await checkJsonKeys(socket, resCode, msg, keys);
+    msg = await checkJsonKeys(socket, resCode, JSON.stringify(msg), keys); // TODO: remove stringify if using encrption
     if (!msg) return undefined;
     const username = await verifyToken(socket, resCode, msg.accessToken);
     if (!username) return undefined;
@@ -162,7 +163,8 @@ async function checkJsonKeys(socket, resCode, msg, keys, accessToken = undefined
  * @param {string} msg Base64 encoded message.
  */
 async function decryptMessage(socket, responseCode, msg) {
-    msg = await authenticator.decryptMessage(msg);
+    // TODO: uncomment if using encryption
+    //msg = await authenticator.decryptMessage(msg);
         
     if (msg === undefined) {
         socket.emit(responseCode, { status: "ERR", err_code: errCodes.BAD_ENCRYPT });
@@ -180,7 +182,8 @@ async function decryptMessage(socket, responseCode, msg) {
  * @param {json} res Response to encrypt.
  */
 async function sendMessage(socket, resCode, accessToken, res) {
-    res = await authenticator.encryptMessage(accessToken, JSON.stringify(res));
+    // TODO: uncomment to encrypt messages
+    //res = await authenticator.encryptMessage(accessToken, JSON.stringify(res));
 
     if (res === undefined) {
         socket.emit(resCode, { status: "ERR", err_code: errCodes.SERVER_ERR });

@@ -17,7 +17,6 @@ module.exports = {
 }
 
 const tokenGenerator = require('./token-generator');
-const logger = require('./logger');
 const crypto = require('crypto');
 
 /**
