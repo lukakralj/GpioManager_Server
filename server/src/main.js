@@ -9,6 +9,7 @@
  */
 
 //----- SOCKET IO ------
+const ngrok = require('ngrok');
 const app = require('express')();
 const server = require('http').Server(app);
 const io = require('socket.io')(server);
@@ -18,13 +19,33 @@ const logger = require('./util/logger');
 const config = require('../config/config.json');
 const errCodes = require('./err-codes');
 const authenticator = require('./util/authenticator');
+const cli = require('./cli');
 
 logger.info("Server has started.");
 
-
 //----- SETUP ----
 server.listen(config.port, () => {
-    logger.info("Listening on port: " + config.port + "...");
+    logger.info("Server listening on port: " + config.port + "...");
+});
+
+logger.info("Connecting ngrok...");
+let ngrokUrl = undefined;
+(async function() {
+    ngrokUrl = await ngrok.connect(config.ngrok_opts);
+    logger.info("Ngrok connected: " + ngrokUrl);
+    logger.info("Ngrok using port: " + config.ngrok_opts.addr);
+})();
+
+cli.registerCommand("exit", onExit);
+
+/** Block Ctrl+C plus graceful shutdown. */
+process.on('SIGINT', async () => {
+    onExit();
+});
+
+/** Graceful shutdown. */
+process.on('SIGTERM', async () => {
+    onExit();
 });
 
 const adminLogin = authenticator.generateNewHash("admin"); // temp. until a DB is setup
@@ -102,6 +123,24 @@ io.on('connection', (socket) => {
     });
     //------END OF TEMPLATE-------
 });
+
+/**
+ * Clean up on exit.
+ */
+async function onExit() {
+    logger.info("Exiting server...");
+    try {
+        await ngrok.disconnect();
+        await ngrok.kill(); 
+        logger.info("Disconnected ngrok.");
+    }
+    catch(err) {
+        logger.error(err);
+    }
+    
+    logger.info("Finished.");
+    process.exit(0);
+}
 
 /**
  * 

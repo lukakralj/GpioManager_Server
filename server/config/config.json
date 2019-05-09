@@ -1,3 +1,7 @@
 {
-    "port": 4256
+    "port": 4268,
+    "ngrok_opts": {
+        "proto": "http",
+        "addr": 4268
+    }
 }
