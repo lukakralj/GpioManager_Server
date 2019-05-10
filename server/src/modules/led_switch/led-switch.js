@@ -21,7 +21,7 @@ const cli = require('../../cli');
 const gpioPath = "/sys/class/gpio";
 const exportPath = gpioPath + "/export";
 const unexportPath = gpioPath + "/unexport";
-const ledPin = 25; // must be physical pin number
+const ledPin = 27; // must be physical pin number
 
 logger.info("Initialising LED module...")
 
@@ -71,12 +71,12 @@ async function turnOFF() {
 
 async function isON() {
     const val = await cmdOutput(`cat ${getPinValuePath(ledPin)}`);
-    return val === "1";
+    return val == 1;
 }
 
 async function isOFF() {
     const val = await cmdOutput(`cat ${getPinValuePath(ledPin)}`);
-    return val === "0";
+    return val == 0;
 }
 
 
@@ -105,11 +105,11 @@ async function unexportPin(pin) {
     return await cmdOutput(`echo ${convertPhysicalPin(pin)} > ${unexportPath}`);
 }
 
-async function getPinValuePath(pin) {
+function getPinValuePath(pin) {
     return `${gpioPath}/gpio${convertPhysicalPin(pin)}/value`;
 }
 
-async function getPinDirectionPath(pin) {
+function getPinDirectionPath(pin) {
     return `${gpioPath}/gpio${convertPhysicalPin(pin)}/direction`;
 }
 
