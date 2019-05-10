@@ -20,6 +20,7 @@ const config = require('../config/config.json');
 const errCodes = require('./err-codes');
 const authenticator = require('./util/authenticator');
 const cli = require('./cli');
+const led = require('./modules/led_switch/led-switch');
 
 logger.info("Server has started.");
 

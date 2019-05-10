@@ -3,6 +3,10 @@
  * Also closing the server should be done through this rather than through
  * Ctrl+C as some cleaning takes place when the server is shut down.
  * 
+ * N.B. If two modules use the same main command name, the action will NOT be
+ * overridden. Both 'subscribed' actions will be executed (like in C# - function 
+ * subscription).
+ * 
  * @module 
  * @author Luka Kralj
  * @version 1.0
