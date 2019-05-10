@@ -60,7 +60,7 @@ io.on('connection', (socket) => {
     /** Obtain the server's public key. */
     socket.on("serverKey", () => {
         const resCode = "serverKeyRes";
-        socket.emit(resCode, { status: "OK", serverKey: authenticator.getServerPublicKey() });
+        socket.emit(resCode, { status: "OK", serverKey: undefined });
     });
 
     /** 
@@ -128,7 +128,7 @@ io.on('connection', (socket) => {
  * Clean up on exit.
  */
 async function onExit() {
-    logger.info("Exiting server...");
+    logger.info("Exiting...");
     try {
         await ngrok.disconnect();
         await ngrok.kill(); 
@@ -137,7 +137,15 @@ async function onExit() {
     catch(err) {
         logger.error(err);
     }
-    
+    io.close(() => {
+        logger.info("IO closed.");
+    });
+    server.close(() => {
+        logger.info("Server closed.");
+    });
+
+    logger.info("Allowing other modules to finish...(5 seconds)");
+    await sleep(5000);
     logger.info("Finished.");
     process.exit(0);
 }
@@ -272,4 +280,17 @@ async function verifyToken(socket, responseCode, accessToken){
         return undefined;
     }
     return username;
+}
+
+
+/**
+ * Await for this function to pause execution for a certain time.
+ *
+ * @param {number} ms Time in milliseconds
+ * @returns {Promise}
+ */
+function sleep(ms) {
+    return new Promise(resolve => {
+        setTimeout(resolve, ms);
+    });
 }

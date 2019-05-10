@@ -13,10 +13,12 @@ module.exports = {
 };
 
 const readline = require('readline');
+const logger = require('./util/logger');
 
 const commands = {};
 
 registerCommand("help", printHelp);
+registerCommand("exit", onExit);
 
 const cli = readline.createInterface({
   input: process.stdin,
@@ -28,7 +30,9 @@ cli.setPrompt("stdin@smarthome > ");
 
 cli.on('line', async (line) => {
     await processLine(line);
-    cli.prompt();
+    if (!line.trim().startsWith("exit")) {
+        cli.prompt();
+    }
 });
 
 /**
@@ -49,10 +53,16 @@ async function processLine(line) {
 
     if (commands.hasOwnProperty(main)) {
         // valid command
-        await commands[main](params);
+        await executeAll(commands[main], params);
     }
     else {
         console.log("Invalid command.");
+    }
+}
+
+async function executeAll(actions, params) {
+    for (const i in actions) {
+        actions[i](params);
     }
 }
 
@@ -63,15 +73,23 @@ async function processLine(line) {
  * @param {function} action Will receive a list of optional parameters.
  */
 async function registerCommand(command, action) {
-    commands[command] = action;
+    if (commands.hasOwnProperty(command)) {
+        commands[command].push(action);
+    }
+    else {
+        commands[command] = [action];
+    }
 }
 
 /**
  * Displays valid commands.
  */
 function printHelp() {
-    console.log("-----------------------");
     console.log("Valid commands are:");
     console.log(Object.keys(commands));
-    console.log("-----------------------");
+}
+
+function onExit() {
+    cli.close();
+    logger.info("CLI closed.")
 }
