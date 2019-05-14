@@ -35,7 +35,10 @@ let ngrokUrl = undefined;
     ngrokUrl = await ngrok.connect(config.ngrokOpts);
     logger.info("Ngrok connected: " + ngrokUrl);
     logger.info("Ngrok using port: " + config.ngrokOpts.addr);
-})();
+})().catch((err) => {
+    logger.error(err);
+    logger.error("Ngrok could not start.");
+});
 
 let stoppedProperly = false;
 cli.registerCommand("stop", onStop);

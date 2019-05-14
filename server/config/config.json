@@ -5,6 +5,6 @@
         "addr": 4268
     },
     "led": {
-        "physicalPin": 25
+        "physicalPin": 27
     }
 }
