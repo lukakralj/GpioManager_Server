@@ -33,10 +33,7 @@ const cli = readline.createInterface({
 cli.setPrompt("stdin@smarthome > ");
 
 cli.on('line', async (line) => {
-    await processLine(line);
-    if (!line.trim().startsWith("exit")) {
-        cli.prompt();
-    }
+    processLine(line);
 });
 
 /**
@@ -47,6 +44,7 @@ cli.on('line', async (line) => {
 async function processLine(line) {
     line = line.trim();
     if (line.length == 0) {
+        cli.prompt();
         return;
     }
     
@@ -57,16 +55,28 @@ async function processLine(line) {
 
     if (commands.hasOwnProperty(main)) {
         // valid command
-        await executeAll(commands[main], params);
+        executeAll(commands[main], params, "exit" != main);
     }
     else {
         console.log("Invalid command.");
+        cli.prompt();
     }
 }
 
-async function executeAll(actions, params) {
+async function executeAll(actions, params, prompt) {
+    const total = actions.length;
+    let executed = 0;
     for (const i in actions) {
-        actions[i](params);
+        actions[i](params).then(() => {
+            executed++;
+        });
+    }
+
+    while (executed < total) {
+        await sleep(2);
+    }
+    if (prompt) {
+        cli.prompt();
     }
 }
 
@@ -88,12 +98,24 @@ async function registerCommand(command, action) {
 /**
  * Displays valid commands.
  */
-function printHelp() {
+async function printHelp() {
     console.log("Valid commands are:");
     console.log(Object.keys(commands));
 }
 
-function onExit() {
+async function onExit() {
     cli.close();
     logger.info("CLI closed.")
+}
+
+/**
+ * Await for this function to pause execution for a certain time.
+ *
+ * @param {number} ms Time in milliseconds
+ * @returns {Promise}
+ */
+function sleep(ms) {
+    return new Promise(resolve => {
+        setTimeout(resolve, ms);
+    });
 }

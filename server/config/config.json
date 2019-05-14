@@ -1,7 +1,10 @@
 {
     "port": 4268,
-    "ngrok_opts": {
+    "ngrokOpts": {
         "proto": "http",
         "addr": 4268
+    },
+    "led": {
+        "physicalPin": 25
     }
 }

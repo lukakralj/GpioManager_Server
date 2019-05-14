@@ -32,20 +32,24 @@ server.listen(config.port, () => {
 logger.info("Connecting ngrok...");
 let ngrokUrl = undefined;
 (async function() {
-    ngrokUrl = await ngrok.connect(config.ngrok_opts);
+    ngrokUrl = await ngrok.connect(config.ngrokOpts);
     logger.info("Ngrok connected: " + ngrokUrl);
-    logger.info("Ngrok using port: " + config.ngrok_opts.addr);
+    logger.info("Ngrok using port: " + config.ngrokOpts.addr);
 })();
 
+let stoppedProperly = false;
+cli.registerCommand("stop", onStop);
 cli.registerCommand("exit", onExit);
 
 /** Block Ctrl+C plus graceful shutdown. */
 process.on('SIGINT', async () => {
+    await onStop();
     onExit();
 });
 
 /** Graceful shutdown. */
 process.on('SIGTERM', async () => {
+    await onStop();
     onExit();
 });
 
@@ -64,17 +68,14 @@ io.on('connection', (socket) => {
         socket.emit(resCode, { status: "OK", serverKey: undefined });
     });
 
-    /** 
-     * Login to obtain an access token.
-     * @param {string} msg Encrypted JSON of format {username: string, password: string, clientKey: string (base64)}
-     */
+    /** Required: {username: string, password: string, clientKey: string (base64)} */
     socket.on("login", async (msg) => {
         const resCode = "loginRes";
         msg = await decryptMessage(socket, resCode, msg);
         if (!msg) return;
 
         try {
-            // TODO: uncomment if using encyption
+            // TODO: uncomment if using encryption
             //msg = JSON.parse(msg);
             const keys = ["username", "password", "clientKey"];
             for (const i in keys) {
@@ -99,12 +100,40 @@ io.on('connection', (socket) => {
         sendMessage(socket, resCode, accessToken, { status: "OK", accessToken: accessToken });
     });
 
-    socket.on("msg", async (msg) => {
-        const resCode = "msgRes";
+    socket.on("ledStatus", async (msg) => {
+        const resCode = "ledStatusRes";
         const processed = await processIncomingMsg(socket, resCode, msg, []);
         if (!processed) return;
-        logger.info("Received: " + processed.msg.text); 
-        sendMessage(socket, resCode, processed.msg.accessToken, { status: "OK", msg: "All good" });
+        
+        const ledStatus = (await led.isON()) ? "on": "off";
+
+        sendMessage(socket, resCode, processed.msg.accessToken, { status: "OK", ledStatus: ledStatus });
+    });
+
+    /** Required: { ledStatus: "on" | "off" } */
+    socket.on("toggleLed", async (msg) => {
+        const resCode = "toggleLedRes";
+        const processed = await processIncomingMsg(socket, resCode, msg, []);
+        if (!processed) return;
+        
+        let res;
+        if (process.msg.ledStatus == "on" || process.msg.ledStatus == "off") {
+            const turnOn = process.msg.ledStatus == "on";
+            const success = (turnOn) ? await led.turnON() : await led.turnOFF();
+            const ledStatus = (await led.isON()) ? "on": "off";
+            if (success) {
+                res = { status: "OK", ledStatus: ledStatus };
+            }
+            else {
+                res = { status: "ERR", err_code: errCodes.LED_ERROR, ledStatus: ledStatus };
+            }
+            
+        }
+        else {
+            res = { status: "ERR", err_code: errCodes.LED_ERROR };
+        }
+
+        sendMessage(socket, resCode, processed.msg.accessToken, res);
     });
 
 
@@ -126,10 +155,13 @@ io.on('connection', (socket) => {
 });
 
 /**
- * Clean up on exit.
+ * Clean up.
  */
-async function onExit() {
-    logger.info("Exiting...");
+async function onStop() {
+    if (stoppedProperly) {
+        return;
+    }
+    logger.info("Stopping...");
     try {
         await ngrok.disconnect();
         await ngrok.kill(); 
@@ -147,8 +179,23 @@ async function onExit() {
 
     logger.info("Allowing other modules to finish...(5 seconds)");
     await sleep(5000);
-    logger.info("Finished.");
-    process.exit(0);
+    logger.info("Stopped.");
+    stoppedProperly = true;
+}
+
+/**
+ * Exit application.
+ */
+async function onExit() {
+    logger.info("Exiting...");
+    await sleep(2000);
+    if (stoppedProperly) {
+        process.exit(0);
+    }
+    else {
+        logger.error("Server was not stopped properly.")
+        process.exit(1);
+    }
 }
 
 /**
@@ -162,7 +209,7 @@ async function processIncomingMsg(socket, resCode, msg, keys) {
     // TODO: uncomment if using encryption
     //msg = await decryptMessage(socket, resCode, msg);
     if (!msg) return undefined;
-    msg = await checkJsonKeys(socket, resCode, JSON.stringify(msg), keys); // TODO: remove stringify if using encrption
+    msg = await checkJsonKeys(socket, resCode, JSON.stringify(msg), keys); // TODO: remove stringify if using encryption
     if (!msg) return undefined;
     const username = await verifyToken(socket, resCode, msg.accessToken);
     if (!username) return undefined;

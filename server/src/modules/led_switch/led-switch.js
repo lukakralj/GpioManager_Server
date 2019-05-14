@@ -21,11 +21,12 @@ const cli = require('../../cli');
 const gpioPath = "/sys/class/gpio";
 const exportPath = gpioPath + "/export";
 const unexportPath = gpioPath + "/unexport";
-const ledPin = 25; // must be physical pin number
+const config = require('../../../config/config.json');
+const ledPin = config.led.physicalPin; // must be physical pin number
 
 logger.info("Initialising LED module...")
 
-cli.registerCommand("exit", onExit);
+cli.registerCommand("stop", onStop);
 
 init().then((ok) => {
     if (ok) {
@@ -52,30 +53,45 @@ async function init() {
     return true;
 }
 
-async function onExit() {
-    await turnOFF();
-    await unexportPin(ledPin);
+async function onStop() {
+    if (await turnOFF()) {
+        logger.info("LED turned off.");
+    }
+    else {
+        logger.warning("Problem turning off LED.");
+    }
+
+    if (await unexportPin(ledPin)) {
+        logger.info("LED pin unexported.");
+    }
+    else {
+        logger.warning("Problem unexporting LED pin.");
+    }
 }
 
+/** @returns True or false. */
 async function turnON() {
-    const ok = await cmdOutput(`echo 1 > ${getPinValuePath(ledPin)}`);
+    const ok = await cmdOutput(`echo 1 > ${await getPinValuePath(ledPin)}`);
     if (!ok) return false;
     return ok;
 }
 
+/** @returns True or false. */
 async function turnOFF() {
-    const ok = await cmdOutput(`echo 0 > ${getPinValuePath(ledPin)}`);
+    const ok = await cmdOutput(`echo 0 > ${await getPinValuePath(ledPin)}`);
     if (!ok) return false;
     return ok;
 }
 
+/** @returns True or false. */
 async function isON() {
-    const val = await cmdOutput(`cat ${getPinValuePath(ledPin)}`);
+    const val = await cmdOutput(`cat ${await getPinValuePath(ledPin)}`);
     return val === "1";
 }
 
+/** @returns True or false. */
 async function isOFF() {
-    const val = await cmdOutput(`cat ${getPinValuePath(ledPin)}`);
+    const val = await cmdOutput(`cat ${await getPinValuePath(ledPin)}`);
     return val === "0";
 }
 
