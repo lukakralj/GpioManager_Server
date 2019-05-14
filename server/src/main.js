@@ -133,7 +133,7 @@ io.on('connection', (socket) => {
             
         }
         else {
-            res = { status: "ERR", err_code: errCodes.LED_ERROR };
+            res = { status: "ERR", err_code: errCodes.INVALID_FORMAT };
         }
 
         sendMessage(socket, resCode, processed.msg.accessToken, res);
