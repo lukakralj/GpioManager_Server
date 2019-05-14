@@ -118,10 +118,10 @@ io.on('connection', (socket) => {
         const resCode = "toggleLedRes";
         const processed = await processIncomingMsg(socket, resCode, msg, []);
         if (!processed) return;
-        
+
         let res;
-        if (process.msg.ledStatus == "on" || process.msg.ledStatus == "off") {
-            const turnOn = process.msg.ledStatus == "on";
+        if (processed.msg.ledStatus == "on" || processed.msg.ledStatus == "off") {
+            const turnOn = processed.msg.ledStatus == "on";
             const success = (turnOn) ? await led.turnON() : await led.turnOFF();
             const ledStatus = (await led.isON()) ? "on": "off";
             if (success) {
