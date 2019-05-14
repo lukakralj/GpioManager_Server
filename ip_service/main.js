@@ -35,7 +35,6 @@ async function execute() {
     } while(publicIP == undefined || localIP == undefined);
 
     let url = await getUrl();
-    console.log(url);
     if (url == undefined) {
         url = "Oops... no meme today :/";
     }
@@ -69,11 +68,11 @@ Ngrok URL: ${ngrokUrl}<br>
 async function connectNgrok() {
     try {
         ngrokUrl = await ngrok.connect({
-            "proto": "http",
+	    "authtoken": "6dKHte5MWU4cd9396rRnt_89P36zVMzLjcW4AHvxjkc",
+            "proto": "tcp",
             "addr": 4487
         });
         console.log("Ngrok connected: " + ngrokUrl);
-        console.log("Ngrok using port: " + config.ngrokOpts.addr);
     }
     catch(err){
         console.log(err);

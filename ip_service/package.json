@@ -10,6 +10,7 @@
   "author": "Luka Kralj",
   "license": "MIT",
   "dependencies": {
+    "ngrok": "^3.1.1",
     "nodemailer": "^6.1.1"
   }
 }
