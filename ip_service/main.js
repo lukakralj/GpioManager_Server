@@ -11,6 +11,7 @@
  * @version 1.0
  */
 
+const ngrok = require('ngrok');
 const nodeMailer = require("nodemailer");
 const email_config = require('./email-config.json');
 const exec = require('child_process').exec;
@@ -19,9 +20,13 @@ const publicIpCmd = "curl ifconfig.me";
 const localIpCmd = "hostname -I";
 const memesCmd = "curl https://www.memedroid.com/memes/top/week/";
 
+let ngrokUrl = undefined;
+
 execute();
 
 async function execute() {
+    await connectNgrok();
+
     let publicIP = undefined;
     let localIP = undefined;
     do {
@@ -47,7 +52,8 @@ async function execute() {
 <a href="#">
 ${url}</a><br><br>
 Local IP: ${localIP}<br>
-Public IP: ${publicIP}
+Public IP: ${publicIP}<br>
+Ngrok URL: ${ngrokUrl}<br>
 </body>
 </html>
     `;
@@ -58,6 +64,21 @@ Public IP: ${publicIP}
         await sleep(5000);
     }
     while (!sent);
+}
+
+async function connectNgrok() {
+    try {
+        ngrokUrl = await ngrok.connect({
+            "proto": "http",
+            "addr": 4487
+        });
+        console.log("Ngrok connected: " + ngrokUrl);
+        console.log("Ngrok using port: " + config.ngrokOpts.addr);
+    }
+    catch(err){
+        console.log(err);
+        console.log("Ngrok could not start.");
+    }
 }
 
 /**
