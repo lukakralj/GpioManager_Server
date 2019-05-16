@@ -108,7 +108,7 @@ io.on('connection', (socket) => {
         const processed = await processIncomingMsg(socket, resCode, msg, []);
         if (!processed) return;
         
-        const ledStatus = (await led.isON()) ? "on": "off";
+        const ledStatus = (await led.isOn()) ? "on": "off";
 
         sendMessage(socket, resCode, processed.msg.accessToken, { status: "OK", ledStatus: ledStatus });
     });
@@ -122,8 +122,8 @@ io.on('connection', (socket) => {
         let res;
         if (processed.msg.ledStatus == "on" || processed.msg.ledStatus == "off") {
             const turnOn = processed.msg.ledStatus == "on";
-            const success = (turnOn) ? await led.turnON() : await led.turnOFF();
-            const ledStatus = (await led.isON()) ? "on": "off";
+            const success = (turnOn) ? await led.turnOn() : await led.turnOff();
+            const ledStatus = (await led.isOn()) ? "on": "off";
             if (success) {
                 res = { status: "OK", ledStatus: ledStatus };
             }
@@ -180,8 +180,8 @@ async function onStop() {
         logger.info("Server closed.");
     });
 
-    logger.info("Allowing other modules to finish...(5 seconds)");
-    await sleep(5000);
+    logger.info("Allowing other modules to finish...(2 seconds)");
+    await sleep(2000);
     logger.info("Stopped.");
     stoppedProperly = true;
 }
@@ -191,7 +191,7 @@ async function onStop() {
  */
 async function onExit() {
     logger.info("Exiting...");
-    await sleep(2000);
+    await sleep(1000);
     if (stoppedProperly) {
         process.exit(0);
     }
