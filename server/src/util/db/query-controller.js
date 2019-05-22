@@ -8,12 +8,20 @@
  */
 
 module.exports = {
-    getUser
+    getUser,
+    getComponents,
+    addComponent,
+    updateComponent,
+    removeComponent
 };
 
 const mysql = require("mysql");
 const logger = require('../logger');
 const db = require('./db-controller');
+
+//=========================================
+//    SELECT
+//=========================================
 
 /**
  * 
@@ -26,4 +34,49 @@ async function getUser(username) {
 
     const res = await db.selectQuery(sql);
     return (res.response.rows.length > 0) ? res.response.rows[0] : undefined;
+}
+
+/**
+ * @returns {Array} List of all the components.
+ */
+async function getComponents() {
+    const sql = "SELECT * FROM Components";
+
+    const res = db.selectQuery(sql);
+    return res.response.rows;
+}
+//=========================================
+//    INSERT
+//=========================================
+
+
+async function addComponent(physicalPin, name, description=undefined) {
+    let sql = "INSERT INTO Components(physicalPin,name,description) VALUES (?,?,?)";
+    sql = mysql.format(sql, [physicalPin, name, description]);
+
+    return await db.insertQuery(sql);
+}
+
+//=========================================
+//    UPDATE
+//=========================================
+
+
+async function updateComponent(id, physicalPin, name, description) {
+    let sql = "UPDATE Components SET physicalPin=?, name=?, description=? WHERE id=?";
+    sql = mysql.format(sql, [physicalPin, name, description, id]);
+
+    return await db.updateQuery(sql);
+}
+
+//=========================================
+//     DELETE
+//=========================================
+
+
+async function removeComponent(id) {
+    let sql = "DELETE FROM Components WHERE id=?";
+    sql = mysql.format(sql, [id]);
+
+    return await db.deleteQuery(sql);
 }
