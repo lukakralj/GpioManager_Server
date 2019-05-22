@@ -40,6 +40,7 @@ init().then((ok) => {
 async function init() {
     try {
         led = new Gpio(ledPin, gpio.DIR_OUT);
+        await led.init();
     }
     catch (err) {
         logger.error(err);

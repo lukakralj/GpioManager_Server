@@ -16,33 +16,39 @@ const DIR_IN = "in";
 const gpioPath = "/sys/class/gpio";
 const exportPath = gpioPath + "/export";
 const unexportPath = gpioPath + "/unexport";
+const logger = require('../util/logger');
 
 module.exports = {
     DIR_OUT,
     DIR_IN
 }
 
-module.exports.Gpio = async (physicalPin, direction) => {
-    this.pinNo = convertPhysicalPin(physicalPin);
+module.exports.Gpio = class Gpio {
 
-    // setup pin
-    if (direction != DIR_IN && direction != DIR_OUT) {
-        throw new Error("Invalid Gpio direction: " + direction + ".");
-    }
-    this.direction = direction;
+    constructor(physicalPin, direction) {
+        this.pinNo = convertPhysicalPin(physicalPin);
 
-    // export pin
-    let ok = await exportPin(this.pinNo);
-    if (!ok) throw new Error("Pin " + this.pinNo + " could not be exported.");
-    // set direction
-    ok = await cmdOutput(`echo ${this.direction} > ${getPinDirectionPath(this.pinNo)}`);
-    if (!ok) {
-        await unexportPin(this.pinNo);
-        throw new Error("Pin direction for pin " + this.pinNo + " could not be set.");
+        // setup pin
+        if (direction != DIR_IN && direction != DIR_OUT) {
+            throw new Error("Invalid Gpio direction: " + direction + ".");
+        }
+        this.direction = direction;
     }
 
-    this.turnOn = async () => {
-        if (direction == DIR_IN) {
+    async init() {
+        // export pin
+        let ok = await exportPin(this.pinNo);
+        if (!ok) throw new Error("Pin " + this.pinNo + " could not be exported.");
+        // set direction
+        ok = await cmdOutput(`echo ${this.direction} > ${getPinDirectionPath(this.pinNo)}`);
+        if (!ok) {
+            await unexportPin(this.pinNo);
+            throw new Error("Pin direction for pin " + this.pinNo + " could not be set.");
+        }
+    }
+
+    async turnOn() {
+        if (this.direction == DIR_IN) {
             throw new Error("Invalid operation for 'IN' pin.");
         }
         const ok = await cmdOutput(`echo 1 > ${await getPinValuePath(this.pinNo)}`);
@@ -50,8 +56,8 @@ module.exports.Gpio = async (physicalPin, direction) => {
         return ok;
     }
 
-    this.turnOff = async () => {
-        if (direction == DIR_IN) {
+    async turnOff() {
+        if (this.direction == DIR_IN) {
             throw new Error("Invalid operation for 'IN' pin.");
         }
         const ok = await cmdOutput(`echo 0 > ${await getPinValuePath(this.pinNo)}`);
@@ -59,22 +65,22 @@ module.exports.Gpio = async (physicalPin, direction) => {
         return ok;
     }
 
-    this.isOn = async () => {
-        if (direction == DIR_IN) {
+    async isOn() {
+        if (this.direction == DIR_IN) {
             throw new Error("Invalid operation: calling isOn on an 'IN' pin. Use readValue instead.");
         }
         const val = await cmdOutput(`cat ${await getPinValuePath(this.pinNo)}`);
         return val == 1;
     }
 
-    this.readValue = async () => {
-        if (direction == DIR_OUT) {
+    async readValue() {
+        if (this.direction == DIR_OUT) {
             throw new Error("Invalid operation: calling readValue on an 'OUT' pin. Use isOn instead.");
         }
         return await cmdOutput(`cat ${await getPinValuePath(this.pinNo)}`);
     }
-    
-    this.unexport = async () => {
+
+    async unexport() {
         return await unexportPin(this.pinNo);
     }
 }
@@ -136,10 +142,10 @@ async function cmdOutput(cmd, timeout = 10000) {
         }
         finished = true;
     });
-   
+
     let time = 0;
-    while(!finished && time < timeout) {
-        time ++;
+    while (!finished && time < timeout) {
+        time++;
         await sleep(1);
     }
     return output;
