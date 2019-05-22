@@ -57,6 +57,7 @@ process.on('SIGTERM', async () => {
 });
 
 const adminLogin = authenticator.generateNewHash("admin"); // temp. until a DB is setup
+console.log(authenticator.generateNewHash("admin"));
 
 io.on('connection', (socket) => {
     logger.info(`Socket ${socket.id} connected`);

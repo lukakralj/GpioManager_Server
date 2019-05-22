@@ -18,6 +18,9 @@ module.exports = {
 
 const tokenGenerator = require('./token-generator');
 const crypto = require('crypto');
+const db_controller = require('./db/db-controller');
+const logger = require('./logger');
+const mysql = require('mysql');
 
 /**
  * {
@@ -31,7 +34,27 @@ const crypto = require('crypto');
  */
 const accessTokens = {}
 const ACCESS_TOKEN_VALIDITY_DAYS = 10;
+initTokens();
 
+/**
+ * Retrieves all access tokens (if any) from the database and creates a lookup table for
+ * faster access.
+ */
+async function initTokens() {
+    const res = await db_controller.selectQuery("SELECT * FROM AccessTokens");
+    if (!res.success) {
+        logger.error("Could not initialise tokens from the DB. Response: " + JSON.stringify(res));
+        return;
+    }
+    const rows = res.response.rows;
+    for (let i = 0; i < rows.length; i++) {
+        accessTokens[rows[i].token] = {
+            username: rows[i].username,
+            expires: rows[i].expiration
+        }
+    }
+    logger.info("Successfully loaded " + rows.length + " token(s) from the DB.");
+}
 
 /**
  * Produce random iterations.
@@ -113,11 +136,26 @@ async function verifyToken(accessToken) {
     if ((expires - new Date()) <= 0) {
         // Token has expired.
         delete accessTokens[accessToken];
+        db_controller.deleteAccessToken(accessToken)
+            .then((res) => {
+                if (res.success) {
+                    logger.info("Access token successfully deleted.")
+                }
+                else {
+                    logger.error("Error deleting access token. Response: " + JSON.stringify(res));
+                }
+            });
         return undefined;
     }
     const newExpiry = new Date();
     newExpiry.setDate(newExpiry.getDate() + ACCESS_TOKEN_VALIDITY_DAYS);
     accessTokens[accessToken].expires = newExpiry;
+    db_controller.updateAccessToken(accessToken, newExpiry)
+        .then((res) => {
+            if (!res.success) {
+                logger.error("Error updating access token. Response: " + JSON.stringify(res));
+            }
+        });
 
     return accessTokens[accessToken].username;
 }
@@ -135,7 +173,17 @@ async function registerNewUserSession(username, userPublicKey) {
     const expires = new Date();
     expires.setDate(expires.getDate() + ACCESS_TOKEN_VALIDITY_DAYS);
     accessTokens[token] = { username: username, expires: expires, publicKey: userPublicKey };
-
+    let sql = "INSERT INTO AccessTokens VALUES (?, ?, ?)";
+    sql = mysql.format(sql, [token, username, expires]);
+    db_controller.insertQuery(sql)
+        .then((res) => {
+            if (res.success) {
+                logger.info("Access token successfully stored.")
+            }
+            else {
+                logger.error("Error storing access token. Response: " + JSON.stringify(res));
+            }
+        });
     return token;
 }
 
@@ -148,6 +196,15 @@ async function registerNewUserSession(username, userPublicKey) {
 async function removeUserSession(accessToken) {
     if (await verifyToken(accessToken)) {
         delete accessTokens[accessToken];
+        db_controller.deleteAccessToken(accessToken)
+            .then((res) => {
+                if (res.success) {
+                    logger.info("Access token successfully deleted.")
+                }
+                else {
+                    logger.error("Error deleting access token. Response: " + JSON.stringify(res));
+                }
+            });
         return true;
     }
     else {
