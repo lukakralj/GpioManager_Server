@@ -21,6 +21,7 @@ const errCodes = require('./err-codes');
 const authenticator = require('./util/authenticator');
 const cli = require('./cli');
 const led = require('./modules/led_switch/led-switch');
+const queryController = require('./util/db/query-controller');
 
 logger.info("Server has started.");
 
@@ -31,7 +32,7 @@ server.listen(config.port, () => {
 
 logger.info("Connecting ngrok...");
 let ngrokUrl = undefined;
-(async function() {
+(async function () {
     ngrokUrl = await ngrok.connect(config.ngrokOpts);
     logger.info("Ngrok connected: " + ngrokUrl);
     logger.info("Ngrok using port: " + config.ngrokOpts.addr);
@@ -55,9 +56,6 @@ process.on('SIGTERM', async () => {
     await onStop();
     onExit();
 });
-
-const adminLogin = authenticator.generateNewHash("admin"); // temp. until a DB is setup
-console.log(authenticator.generateNewHash("admin"));
 
 io.on('connection', (socket) => {
     logger.info(`Socket ${socket.id} connected`);
@@ -94,7 +92,7 @@ io.on('connection', (socket) => {
             return;
         }
 
-        if (! (await verifyUser(msg))) {
+        if (!(await verifyUser(msg))) {
             socket.emit(resCode, { status: "ERR", err_code: errCodes.BAD_AUTH });
             return;
         }
@@ -108,8 +106,8 @@ io.on('connection', (socket) => {
         const resCode = "ledStatusRes";
         const processed = await processIncomingMsg(socket, resCode, msg, []);
         if (!processed) return;
-        
-        const ledStatus = (await led.isOn()) ? "on": "off";
+
+        const ledStatus = (await led.isOn()) ? "on" : "off";
 
         sendMessage(socket, resCode, processed.msg.accessToken, { status: "OK", ledStatus: ledStatus });
     });
@@ -124,14 +122,14 @@ io.on('connection', (socket) => {
         if (processed.msg.ledStatus == "on" || processed.msg.ledStatus == "off") {
             const turnOn = processed.msg.ledStatus == "on";
             const success = (turnOn) ? await led.turnOn() : await led.turnOff();
-            const ledStatus = (await led.isOn()) ? "on": "off";
+            const ledStatus = (await led.isOn()) ? "on" : "off";
             if (success) {
                 res = { status: "OK", ledStatus: ledStatus };
             }
             else {
                 res = { status: "ERR", err_code: errCodes.LED_ERROR, ledStatus: ledStatus };
             }
-            
+
         }
         else {
             res = { status: "ERR", err_code: errCodes.INVALID_FORMAT };
@@ -168,10 +166,10 @@ async function onStop() {
     logger.info("Stopping...");
     try {
         await ngrok.disconnect();
-        await ngrok.kill(); 
+        await ngrok.kill();
         logger.info("Disconnected ngrok.");
     }
-    catch(err) {
+    catch (err) {
         logger.error(err);
     }
     io.close(() => {
@@ -266,7 +264,7 @@ async function checkJsonKeys(socket, resCode, msg, keys, accessToken = undefined
 async function decryptMessage(socket, responseCode, msg) {
     // TODO: uncomment if using encryption
     //msg = await authenticator.decryptMessage(msg);
-        
+
     if (msg === undefined) {
         socket.emit(responseCode, { status: "ERR", err_code: errCodes.BAD_ENCRYPT });
         return undefined;
@@ -300,9 +298,10 @@ async function sendMessage(socket, resCode, accessToken, res) {
  */
 async function verifyUser(userData) {
     try {
-        // TODO: add DB check
-        if (userData.username === "admin" &&
-                authenticator.verifyPassword(userData.password, adminLogin.hash, adminLogin.salt, adminLogin.iterations)) {
+        const saved = await queryController.getUser(userData.username);
+
+        if (saved &&
+            authenticator.verifyPassword(userData.password, saved.hashedPassword, saved.salt, saved.iterations)) {
             // valid user
             return true;
         }
@@ -321,7 +320,7 @@ async function verifyUser(userData) {
  * @param {string} accessToken Token send by the user.
  * @returns {string} Username associated with the token or undefined if token is invalid or missing.
  */
-async function verifyToken(socket, responseCode, accessToken){
+async function verifyToken(socket, responseCode, accessToken) {
     if (!accessToken) {
         socket.emit(responseCode, { status: "ERR", err_code: errCodes.NO_AUTH });
         return undefined;
