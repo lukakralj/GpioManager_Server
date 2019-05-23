@@ -42,17 +42,19 @@ async function getUser(username) {
 async function getComponents() {
     const sql = "SELECT * FROM Components";
 
-    const res = db.selectQuery(sql);
+    const res = await db.selectQuery(sql);
     return res.response.rows;
 }
+
+
 //=========================================
 //    INSERT
 //=========================================
 
 
-async function addComponent(physicalPin, name, description=undefined) {
-    let sql = "INSERT INTO Components(physicalPin,name,description) VALUES (?,?,?)";
-    sql = mysql.format(sql, [physicalPin, name, description]);
+async function addComponent(physicalPin, direction, name, description=undefined) {
+    let sql = "INSERT INTO Components(physicalPin,direction,name,description) VALUES (?,?,?,?)";
+    sql = mysql.format(sql, [physicalPin, direction, name, description]);
 
     return await db.insertQuery(sql);
 }
@@ -62,9 +64,9 @@ async function addComponent(physicalPin, name, description=undefined) {
 //=========================================
 
 
-async function updateComponent(id, physicalPin, name, description) {
-    let sql = "UPDATE Components SET physicalPin=?, name=?, description=? WHERE id=?";
-    sql = mysql.format(sql, [physicalPin, name, description, id]);
+async function updateComponent(id, physicalPin, direction, name, description) {
+    let sql = "UPDATE Components SET physicalPin=?, direction=?, name=?, description=? WHERE id=?";
+    sql = mysql.format(sql, [physicalPin, direction, name, description, id]);
 
     return await db.updateQuery(sql);
 }

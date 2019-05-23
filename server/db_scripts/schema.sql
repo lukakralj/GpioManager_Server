@@ -25,6 +25,7 @@ DROP TABLE IF EXISTS Components;
 CREATE TABLE Components (
     id INTEGER AUTO_INCREMENT,
     physicalPin INTEGER NOT NULL UNIQUE,
+    direction ENUM("in", "out") NOT NULL DEFAULT "out",
     `name` VARCHAR(255) NOT NULL,
     `description` TEXT,
     PRIMARY KEY (id)
