@@ -9,6 +9,7 @@ const gpio = require('./Gpio');
 const Gpio = gpio.Gpio;
 const queryController = require('./../util/db/query-controller');
 const logger = require('./../util/logger');
+const cli = require('./../cli');
 
 /**
  * Mapping of all the components that are currently being used.
@@ -22,6 +23,8 @@ const logger = require('./../util/logger');
  */
 const components = {};
 init();
+
+cli.registerCommand("stop", onStop);
 
 async function init() {
     const comp = await queryController.getComponents();
@@ -47,21 +50,22 @@ async function init() {
 
 async function getComponents() {
     const res = {};
-    for (const i in components) {
-        const c = components[i];
-        res[c.id] = {
+    for (const id in components) {
+        const c = components[id];
+        res[id] = {
             physicalPin: c.physicalPin,
             direction: c.direction,
             name: c.name,
             description: c.description
         };
         if (c.direction == gpio.DIR_OUT) {
-            res[c.id].isOn = await c.gpio.isOn();
+            res[id].isOn = await c.gpio.isOn();
         }
         else {
-            res[c.id].curValue = await c.gpio.readValue();
+            res[id].curValue = await c.gpio.readValue();
         }
     }
+    return res;
 }
 
 async function updateComponent(id, data) {
@@ -158,4 +162,16 @@ async function removeComponent(id) {
 
     queryController.removeComponent(id);
     return true;
+}
+
+async function onStop() {
+    for (const id in components) {
+        try {
+            await components[id].gpio.unexport();
+        }
+        catch(err) {
+            logger.error(err);
+            logger.warning("Component: " + components[id].name + " was not unexported correctly.");
+        }
+    }
 }
