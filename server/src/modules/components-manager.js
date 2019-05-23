@@ -1,5 +1,6 @@
 module.exports = {
     getComponents,
+    toggleComponent,
     updateComponent,
     addComponent,
     removeComponent
@@ -49,23 +50,43 @@ async function init() {
 }
 
 async function getComponents() {
-    const res = {};
+    const res = [];
     for (const id in components) {
         const c = components[id];
-        res[id] = {
+        const toAdd = {
+            id: c.id,
             physicalPin: c.physicalPin,
             direction: c.direction,
             name: c.name,
             description: c.description
         };
         if (c.direction == gpio.DIR_OUT) {
-            res[id].isOn = await c.gpio.isOn();
+            toAdd.isOn = await c.gpio.isOn();
         }
         else {
-            res[id].curValue = await c.gpio.readValue();
+            toAdd.curValue = await c.gpio.readValue();
         }
+        res.push(toAdd);
     }
     return res;
+}
+
+async function toggleComponent(id, status) {
+    if (components[id].direction != gpio.DIR_OUT || (status != "on" && status != "off")) {
+        throw new Error("Invalid toggle request.");
+    }
+
+    if (status == "on") {
+        if (await components[id].gpio.turnOn()) {
+            return true;
+        }
+    }
+    else {
+        if (await components[id].gpio.turnOff()) {
+            return true;
+        }
+    }
+    return false;
 }
 
 async function updateComponent(id, data) {

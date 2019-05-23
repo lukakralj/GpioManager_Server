@@ -8,6 +8,13 @@
  * @version 1.0
  */
 
+/*
+REFACTOR IDEA: 
+Put all groups of setup functions in a separate file. For example, all components
+endpoints are put in one function in a different file. This function is then 
+called from (socket) => {} function (top level of io.on()). The file with 
+components setup function imports a module with setup-util functions (processIncomingMessage etc.).
+*/
 
 //----- SOCKET IO ------
 const app = require('express')();
@@ -19,8 +26,8 @@ const logger = require('./util/logger');
 const config = require('../config/config.json');
 const errCodes = require('./err-codes');
 const authenticator = require('./util/authenticator');
-const led = require('./modules/led_switch/led-switch');
 const queryController = require('./util/db/query-controller');
+const compManager = require('./modules/components-manager');
 const cli = require('./cli');
 
 //----- SETUP ----
@@ -29,6 +36,10 @@ server.listen(config.port, () => {
 });
 
 cli.registerCommand("stop", onStop);
+
+/** Used to notify all that a change in components has happened. */
+const componentsChangeCode = "componentsChange";
+const componentsRoom = "componentsRoom";
 
 io.on('connection', (socket) => {
     logger.info(`Socket ${socket.id} connected`);
@@ -75,42 +86,93 @@ io.on('connection', (socket) => {
         sendMessage(socket, resCode, accessToken, { status: "OK", accessToken: accessToken });
     });
 
-    socket.on("ledStatus", async (msg) => {
-        const resCode = "ledStatusRes";
-        const processed = await processIncomingMsg(socket, resCode, msg, []);
+    /** Requires access token. */
+    socket.on("joinComponentsRoom", async (msg) => {
+        const resCode = "joinComponentsRoomRes";
+        const processed = await processIncomingMsg(socket, resCode, msg, []); 
         if (!processed) return;
+  
+        socket.join(componentsRoom);
+        logger.info(`Socket ${socket.id} joined ${componentsRoom}.`);
 
-        const ledStatus = (await led.isOn()) ? "on" : "off";
-
-        sendMessage(socket, resCode, processed.msg.accessToken, { status: "OK", ledStatus: ledStatus });
+        socket.emit(resCode, { status: "OK"});
     });
 
-    /** Required: { ledStatus: "on" | "off" } */
-    socket.on("toggleLed", async (msg) => {
-        const resCode = "toggleLedRes";
-        const processed = await processIncomingMsg(socket, resCode, msg, []);
-        if (!processed) return;
+    socket.on("leaveComponentsRoom", async () => {
+        const resCode = "leaveComponentsRoomRes";
+  
+        socket.leave(componentsRoom);
+        logger.info(`Socket ${socket.id} left ${componentsRoom}.`);
 
+        socket.emit(resCode, { status: "OK"});
+    });
+
+    socket.on("components", async (msg) => {
+        const resCode = "componentsRes";
+        const processed = await processIncomingMsg(socket, resCode, msg, []); 
+        if (!processed) return;
+  
+        const components = await compManager.getComponents();
+
+        sendMessage(socket, resCode, processed.msg.accessToken, { status: "OK", components: components });
+    });
+
+    /** Required: {id: integer, status: "on" | "off"} */
+    socket.on("toggleComponent", async (msg) => {
+        const resCode = "toggleComponentRes";
+        const processed = await processIncomingMsg(socket, resCode, msg, ["id", "status"]); 
+        if (!processed) return;
+  
+        let success;
         let res;
-        if (processed.msg.ledStatus == "on" || processed.msg.ledStatus == "off") {
-            const turnOn = processed.msg.ledStatus == "on";
-            const success = (turnOn) ? await led.turnOn() : await led.turnOff();
-            const ledStatus = (await led.isOn()) ? "on" : "off";
-            if (success) {
-                res = { status: "OK", ledStatus: ledStatus };
-            }
-            else {
-                res = { status: "ERR", err_code: errCodes.LED_ERROR, ledStatus: ledStatus };
-            }
-
+        try {
+            success = await compManager.toggleComponent(processed.msg.id, processed.msg.status);
+            res = (success) ? { status: "OK"} : {status: "ERR", err_code: errCodes.SERVER_ERR};
+        } 
+        catch(err) {
+            logger.error(err);
+            res = {status: "ERR", err_code: errCodes.INVALID_FORMAT};
         }
-        else {
-            res = { status: "ERR", err_code: errCodes.INVALID_FORMAT };
-        }
-
+         
         sendMessage(socket, resCode, processed.msg.accessToken, res);
+        io.in(componentsRoom).emit(componentsChangeCode);
     });
 
+    /** Required: {id: integer, data: json} */
+    socket.on("updateComponent", async (msg) => {
+        const resCode = "updateComponentRes";
+        const processed = await processIncomingMsg(socket, resCode, msg, ["id", "data"]); 
+        if (!processed) return;
+  
+        const success = await compManager.updateComponent(processed.msg.id, processed.msg.data);
+        const res = (success) ? { status: "OK" } : {status: "ERR", err_code: errCodes.SERVER_ERR};
+        sendMessage(socket, resCode, processed.msg.accessToken, res);
+        io.in(componentsRoom).emit(componentsChangeCode);
+    });
+
+    /** Required: {data: json} */
+    socket.on("addComponent", async (msg) => {
+        const resCode = "addComponentRes";
+        const processed = await processIncomingMsg(socket, resCode, msg, ["data"]); 
+        if (!processed) return;
+  
+        const id = await compManager.addComponent(processed.msg.data);
+        const res = (id != undefined) ? { status: "OK", id: id} : {status: "ERR", err_code: errCodes.INVALID_FORMAT};
+        sendMessage(socket, resCode, processed.msg.accessToken, res);
+        io.in(componentsRoom).emit(componentsChangeCode);
+    });
+
+    /** Required: {id: integer} */
+    socket.on("removeComponent", async (msg) => {
+        const resCode = "removeComponentRes";
+        const processed = await processIncomingMsg(socket, resCode, msg, ["id"]); 
+        if (!processed) return;
+  
+        const success = await compManager.removeComponent(processed.msg.id);
+        const res = (success) ? { status: "OK"} : {status: "ERR", err_code: errCodes.SERVER_ERR};
+        sendMessage(socket, resCode, processed.msg.accessToken, res);
+        io.in(componentsRoom).emit(componentsChangeCode);
+    });
 
     //------------------------------------------------------
     //      TEMPLATE FOR NEW ENDPOINTS
