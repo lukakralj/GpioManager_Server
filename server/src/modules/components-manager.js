@@ -54,7 +54,7 @@ async function getComponents() {
     for (const id in components) {
         const c = components[id];
         const toAdd = {
-            id: c.id,
+            id: id,
             physicalPin: c.physicalPin,
             direction: c.direction,
             name: c.name,
