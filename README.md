@@ -9,3 +9,12 @@ A central hub for controlling devices in a smart home setup.
 4. populate DB: `sudo mysql -u root -p < /path/to/insert.sql`
 5. start server: `npm start`
 6. server will start as a sudo user (to be able to access gpios etc)
+
+## Start on startup
+
+To start the server when the DragonBoard is turned on edit `crontab` file.
+
+1. Open editor: `sudo vim /etc/crontab`
+2. At the bottom of the file add this line: `@reboot root cd /path/to/server && npm start`
+
+Next time the DragonBoard boots the server will start automatically.
