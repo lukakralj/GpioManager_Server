@@ -30,7 +30,7 @@ const cli = readline.createInterface({
   terminal: false
 });
 
-cli.setPrompt("stdin@smarthome > ");
+cli.setPrompt("stdin@iotControl > ");
 
 cli.on('line', async (line) => {
     processLine(line);

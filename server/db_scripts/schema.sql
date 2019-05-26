@@ -5,14 +5,18 @@
 -- @author Luka Kralj
 -- ====================================================
 
-CREATE DATABASE IF NOT EXISTS SmartHomeDB;
+-- TODO: remove
+DELETE DATABASE IF EXISTS SmartHomeDB;
+DROP USER IF EXISTS SmartHomeAdmin;
 
-USE SmartHomeDB;
+CREATE DATABASE IF NOT EXISTS iotControlDB;
+
+USE iotControlDB;
 
 -- Create user that is used in the DBMS to avoid using root.
-GRANT ALL PRIVILEGES ON SmartHomeDB.*
-    TO 'smartHomeAdmin'@'localhost'
-    IDENTIFIED BY "SmartHome_admin1";
+GRANT ALL PRIVILEGES ON iotControlDB.*
+    TO 'iotControlAdmin'@'localhost'
+    IDENTIFIED BY "iotControl_admin1";
 
 DROP TABLE IF EXISTS AccessTokens;
 DROP TABLE IF EXISTS Users;

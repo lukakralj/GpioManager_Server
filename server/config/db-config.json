@@ -1,6 +1,6 @@
 {
     "host": "localhost",
-    "user": "smartHomeAdmin",
-    "password": "SmartHome_admin1",
-    "database": "SmartHomeDB"
+    "user": "iotControlAdmin",
+    "password": "iotControl_admin1",
+    "database": "iotControlDB"
 }

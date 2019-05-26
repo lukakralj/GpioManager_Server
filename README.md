@@ -1,5 +1,5 @@
-# smartHome
-A central hub for controlling devices in a smart home setup.
+# IoTControlServer
+A central hub for controlling IoT devices through a DragonBoard.
 
 ## Setup
 
