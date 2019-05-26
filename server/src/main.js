@@ -11,6 +11,7 @@
 const ngrok = require('ngrok');
 const logger = require('./util/logger');
 const config = require('../config/config.json');
+const nodeMailer = require('nodemailer');
 const cli = require('./cli');
 
 logger.info("Server has started.");
@@ -23,6 +24,7 @@ let ngrokUrl = undefined;
     ngrokUrl = await ngrok.connect(config.ngrokOpts);
     logger.info("Ngrok connected: " + ngrokUrl);
     logger.info("Ngrok using port: " + config.ngrokOpts.addr);
+    sendEmail(ngrokUrl);
 })().catch((err) => {
     logger.error(err);
     logger.error("Ngrok could not start.");
@@ -93,4 +95,34 @@ function sleep(ms) {
     return new Promise(resolve => {
         setTimeout(resolve, ms);
     });
+}
+
+
+async function sendEmail(html) {
+    const transporter = nodeMailer.createTransport(config.transporter);
+
+    const receiverOptions = {
+        from: transporter.options.auth.user,
+        to: "luka.kralj2@gmail.com",
+        subject: "Server configuration",
+        html: html
+    };
+
+    let successful = false;
+    let finished = false;
+    await transporter.sendMail(receiverOptions, (err) => {
+        if (err) {
+            console.log(err);
+            successful = false;
+        } else {
+            console.log("Email sent successfully to: " + receiverOptions.to + ".");
+            successful = true;
+        }
+        transporter.close();
+        finished = true;
+    });
+    while (!finished) {
+        await sleep(1);
+    }
+    return successful;
 }

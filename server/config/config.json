@@ -6,5 +6,12 @@
     },
     "led": {
         "physicalPin": 27
+    },
+    "transporter": {
+        "service": "Yahoo",
+        "auth": {
+            "user": "luka.kralj@yahoo.com",
+            "pass": "jan30.xed"
+        }
     }
 }
