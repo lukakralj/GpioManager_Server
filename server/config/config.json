@@ -1,6 +1,7 @@
 {
     "port": 4268,
     "ngrokOpts": {
+        "authtoken": "6dKHte5MWU4cd9396rRnt_89P36zVMzLjcW4AHvxjkc",
         "proto": "http",
         "addr": 4268
     },

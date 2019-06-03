@@ -25,7 +25,7 @@ let ngrokUrl = undefined;
 execute();
 
 async function execute() {
-    await connectNgrok();
+    // await connectNgrok(); TODO: connect ssh ngrok from server directly
 
     let publicIP = undefined;
     let localIP = undefined;
@@ -68,7 +68,7 @@ Ngrok URL: ${ngrokUrl}<br>
 async function connectNgrok() {
     try {
         ngrokUrl = await ngrok.connect({
-	    "authtoken": "6dKHte5MWU4cd9396rRnt_89P36zVMzLjcW4AHvxjkc",
+           "authtoken": "6dKHte5MWU4cd9396rRnt_89P36zVMzLjcW4AHvxjkc",
             "proto": "tcp",
             "addr": 4487
         });

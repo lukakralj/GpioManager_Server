@@ -24,7 +24,14 @@ let ngrokUrl = undefined;
     ngrokUrl = await ngrok.connect(config.ngrokOpts);
     logger.info("Ngrok connected: " + ngrokUrl);
     logger.info("Ngrok using port: " + config.ngrokOpts.addr);
-    sendEmail(ngrokUrl);
+    let sent = false;
+    logger.info("Sending ngrok info email...");
+    do {
+        sent = await sendEmail(ngrokUrl);
+        await sleep(5000);
+    }
+    while (!sent);
+    logger.info("Ngrok info email sent.");
 })().catch((err) => {
     logger.error(err);
     logger.error("Ngrok could not start.");
