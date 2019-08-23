@@ -1,0 +1,9 @@
+#!/bin/bash
+
+cd "$(dirname "$0")" &&
+echo Loading schema... &&
+mysql -u root -p < schema.sql &&
+echo Schema loaded. &&
+echo Inserting data... &&
+mysql -u root -p < insert.sql &&
+echo Data inserted. Setup complete. &&

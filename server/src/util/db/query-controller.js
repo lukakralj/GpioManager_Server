@@ -16,7 +16,6 @@ module.exports = {
 };
 
 const mysql = require("mysql");
-const logger = require('../logger');
 const db = require('./db-controller');
 
 //=========================================
@@ -64,7 +63,7 @@ async function addComponent(physicalPin, direction, name, description=undefined)
 //=========================================
 
 
-async function updateComponent(id, physicalPin, direction, name, description) {
+async function updateComponent(id, physicalPin, direction, name, description=undefined) {
     let sql = "UPDATE Components SET physicalPin=?, direction=?, name=?, description=? WHERE id=?";
     sql = mysql.format(sql, [physicalPin, direction, name, description, id]);
 

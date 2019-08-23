@@ -30,7 +30,16 @@ const cli = readline.createInterface({
   terminal: false
 });
 
-cli.setPrompt("stdin@iotControl > ");
+cli.setPrompt("stdin@gpioManager >> ");
+
+// Print initial help
+setTimeout(() => {
+    console.log("====Hello!====");
+    console.log("Communicate with the server via this CLI.")
+    console.log("N.B. To properly stop the server execute 'stop' first and then call 'exit'.");
+    console.log("==============");
+    cli.prompt();
+}, 5000)
 
 cli.on('line', async (line) => {
     processLine(line);
@@ -58,7 +67,7 @@ async function processLine(line) {
         executeAll(commands[main], params, "exit" != main);
     }
     else {
-        console.log("Invalid command.");
+        console.log("Invalid command. Type 'help' for available commands.");
         cli.prompt();
     }
 }

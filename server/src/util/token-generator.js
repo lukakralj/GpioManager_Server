@@ -144,7 +144,7 @@ function randCharSeq(max = 5) {
  * @returns A random character.
  */
 function randChar() {
-    const all = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789*-+/.,_$=#";
+    const all = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     return all.charAt(randInt(0, all.length));
 }
 

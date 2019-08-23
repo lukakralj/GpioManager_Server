@@ -123,12 +123,12 @@ function getPinDirectionPath(pin) {
  * 
  * @param {string} cmd One of the constants above.
  * @param {number} timeout Number of milliseconds.
- * @returns {string} Comand output or undefined if an error occurred.
+ * @returns {string} Command output or undefined if an error occurred.
  */
 async function cmdOutput(cmd, timeout = 10000) {
     let output = undefined;
     let finished = false;
-    const proc = exec(cmd, (err, stdout, stderr) => {
+    exec(cmd, (err, stdout, stderr) => {
         if (err) {
             logger.error(err)
             logger.error(stderr);

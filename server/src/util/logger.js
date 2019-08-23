@@ -3,7 +3,7 @@
  * and to save a log file and/or output the log to console.
  * 
  * @module logger
- * @author Danilo Del Busso
+ * @author Danilo Del Busso <i>(delbussodanilo98@gmail.com)</i>
  * @version 0.0.2
  */
 

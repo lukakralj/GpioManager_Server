@@ -28,7 +28,6 @@ let ngrokUrl = undefined;
     logger.info("Sending ngrok info email...");
     do {
         sent = await sendEmail(ngrokUrl);
-        await sleep(5000);
     }
     while (!sent);
     logger.info("Ngrok info email sent.");

@@ -29,7 +29,7 @@ const dateformat = require('dateformat');
  * @returns {Promise<JSON>} JSON object that contains response data or error message, if the query was unsuccessful.
  */
 async function selectQuery(sql) {
-    return await nonCriticalQuery(sql, "select", async (result) => {
+    return await executeQuery(sql, "select", async (result) => {
         const rows_ = [];
         for (const key in result) {
             rows_.push(result[key]);
@@ -48,7 +48,7 @@ async function selectQuery(sql) {
  * @returns {Promise<JSON>} JSON object that contains response data or error message, if the query was unsuccessful.
  */
 async function insertQuery(sql) {
-    return await nonCriticalQuery(sql, "insert", async (result) => {
+    return await executeQuery(sql, "insert", async (result) => {
         return await {
             query: "OK",
             affectedRows: result.affectedRows,
@@ -64,7 +64,7 @@ async function insertQuery(sql) {
  * @returns {Promise<JSON>} JSON object that contains response data or error message, if the query was unsuccessful.
  */
 async function deleteQuery(sql) {
-    return await nonCriticalQuery(sql, "delete", async (result) => {
+    return await executeQuery(sql, "delete", async (result) => {
         return await {
             query: "OK",
             affectedRows: result.affectedRows,
@@ -83,7 +83,7 @@ async function deleteQuery(sql) {
  * @returns {Promise<JSON>} JSON object that contains response data or error message, if the query was unsuccessful.
  */
 async function updateQuery(sql) {
-    return await nonCriticalQuery(sql, "update", async (result) => {
+    return await executeQuery(sql, "update", async (result) => {
         return await {
             query: "OK",
             affectedRows: result.affectedRows,
@@ -146,7 +146,7 @@ async function deleteAccessToken(accessToken) {
  *                                  the query was successful.
  * @returns {Promise<JSON>} JSON object that contains response data or error message, if the query was unsuccessful.
  */
-async function nonCriticalQuery(sql, type, treatResponse) {
+async function executeQuery(sql, type, treatResponse) {
     if (!startsWith(sql, type)) {
         throw new Error("Invalid use of " + type + "Query.");
     }

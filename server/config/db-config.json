@@ -1,6 +1,6 @@
 {
     "host": "localhost",
-    "user": "iotControlAdmin",
-    "password": "iotControl_admin1",
-    "database": "iotControlDB"
+    "user": "GpioManagerAdmin",
+    "password": "GpioManager_admin1",
+    "database": "GpioManagerDB"
 }

@@ -32,7 +32,7 @@ const cli = require('./cli');
 
 //----- SETUP ----
 server.listen(config.port, () => {
-    logger.info("Server listening on port: " + config.port + "...");
+    logger.info("Server listening on port: " + config.port + ".");
 });
 
 cli.registerCommand("stop", onStop);
@@ -51,7 +51,7 @@ io.on('connection', (socket) => {
     /** Obtain the server's public key. */
     socket.on("serverKey", () => {
         const resCode = "serverKeyRes";
-        socket.emit(resCode, { status: "OK", serverKey: undefined });
+        socket.emit(resCode, { status: "OK", serverKey: undefined });// TODO:
     });
 
     /** Required: {username: string, password: string, clientKey: string (base64)} */
@@ -327,7 +327,7 @@ async function verifyToken(socket, responseCode, accessToken) {
 
 async function onStop() {
     io.close(() => {
-        logger.info("IO closed.");
+        logger.info("Socket.IO closed.");
     });
     server.close(() => {
         logger.info("Server closed.");

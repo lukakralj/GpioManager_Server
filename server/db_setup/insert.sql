@@ -1,5 +1,5 @@
 -- @author Luka Kralj
-USE SmartHomeDB;
+USE GpioManagerDB;
 
 DELETE FROM Components;
 DELETE FROM AccessTokens;

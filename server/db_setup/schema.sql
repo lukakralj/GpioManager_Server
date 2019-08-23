@@ -6,17 +6,17 @@
 -- ====================================================
 
 -- TODO: remove
-DELETE DATABASE IF EXISTS SmartHomeDB;
-DROP USER IF EXISTS SmartHomeAdmin;
+DELETE DATABASE IF EXISTS GpioManagerDB;
+DROP USER IF EXISTS GpioManagerAdmin;
 
-CREATE DATABASE IF NOT EXISTS iotControlDB;
+CREATE DATABASE IF NOT EXISTS GpioManagerDB;
 
-USE iotControlDB;
+USE GpioManagerDB;
 
 -- Create user that is used in the DBMS to avoid using root.
-GRANT ALL PRIVILEGES ON iotControlDB.*
-    TO 'iotControlAdmin'@'localhost'
-    IDENTIFIED BY "iotControl_admin1";
+GRANT ALL PRIVILEGES ON GpioManagerDB.*
+    TO 'GpioManagerAdmin'@'localhost'
+    IDENTIFIED BY "GpioManager_admin1";
 
 DROP TABLE IF EXISTS AccessTokens;
 DROP TABLE IF EXISTS Users;
