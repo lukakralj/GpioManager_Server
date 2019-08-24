@@ -1,23 +1,5 @@
 # Format of the server responses
 
-## Top layer response
-
-Some messages are encrypted and some are not. If the message is encrypted then the response format is:
-
-    {
-        encrypted: "YES",
-        res: base64 string
-    }
-
-If an error occurs or the message does not need to be encrypted (e.g. obtaining the public key), then the format is as follows:
-
-    {
-        encrypted: "NO",
-        res: json in one of the formats below 
-    }
-
-## General formats
-
 ### Success
 If the request was accepted and there have been no errors then the format is as follows:
     {

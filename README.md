@@ -1,4 +1,4 @@
-# IoTControlServer
+# Gpio Manager (Server)
 A central hub for controlling IoT devices through a DragonBoard.
 
 ## Setup

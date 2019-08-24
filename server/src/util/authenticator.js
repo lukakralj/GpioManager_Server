@@ -1,7 +1,5 @@
 /**
  * This module provides the functionalities that concern data encryption and security.
- * It provides functions for RSA encryption and decryption, as well as access token
- * control for the logged-in users.
  * 
  * @module authenticator
  * @author Luka Kralj
@@ -27,7 +25,6 @@ const mysql = require('mysql');
  *   token1: {
  *     username: string,
  *     expires: Date,
- *     publicKey: key
  *   },
  *   ...
  * }
@@ -165,14 +162,13 @@ async function verifyToken(accessToken) {
 * used in authorisation of the requests.
 *
 * @param {string} username A valid username.
-* @param {object} userPublicKey User's public key to encrypt messages with.
 * @returns {string} A login token for this user.
 */
-async function registerNewUserSession(username, userPublicKey) {
+async function registerNewUserSession(username) {
     const token = tokenGenerator.generateAccessToken();
     const expires = new Date();
     expires.setDate(expires.getDate() + ACCESS_TOKEN_VALIDITY_DAYS);
-    accessTokens[token] = { username: username, expires: expires, publicKey: userPublicKey };
+    accessTokens[token] = { username: username, expires: expires };
     let sql = "INSERT INTO AccessTokens VALUES (?, ?, ?)";
     sql = mysql.format(sql, [token, username, expires]);
     db_controller.insertQuery(sql)

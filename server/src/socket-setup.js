@@ -31,8 +31,8 @@ const compManager = require('./modules/components-manager');
 const cli = require('./cli');
 
 //----- SETUP ----
-server.listen(config.port, () => {
-    logger.info("Server listening on port: " + config.port + ".");
+server.listen(config.ngrokOpts.addr, () => {// port same as in ngrok
+    logger.info("Server listening on port: " + config.ngrokOpts.addr + ".");
 });
 
 cli.registerCommand("stop", onStop);
@@ -48,42 +48,21 @@ io.on('connection', (socket) => {
         logger.info(`Socket ${socket.id} disconnected`);
     });
 
-    /** Obtain the server's public key. */
-    socket.on("serverKey", () => {
-        const resCode = "serverKeyRes";
-        socket.emit(resCode, { status: "OK", serverKey: undefined });// TODO:
-    });
-
-    /** Required: {username: string, password: string, clientKey: string (base64)} */
+    /** Required: {username: string, password: string} */
     socket.on("login", async (msg) => {
         const resCode = "loginRes";
-        msg = await decryptMessage(socket, resCode, msg);
-        if (!msg) return;
 
-        try {
-            // TODO: uncomment if using encryption
-            //msg = JSON.parse(msg);
-            const keys = ["username", "password", "clientKey"];
-            for (const i in keys) {
-                if (!msg.hasOwnProperty(keys[i])) {
-                    throw new Error("Missing key (" + keys[i] + ") in: " + JSON.stringify(msg));
-                }
-            }
-        }
-        catch (err) {
-            logger.error(err);
-            socket.emit(resCode, { status: "ERR", err_code: errCodes.INVALID_FORMAT });
-            return;
-        }
+        const keysOk = await checkJsonKeys(socket, resCode, msg, ["username", "password"]);
+        if (!keysOk) return;
 
         if (!(await verifyUser(msg))) {
             socket.emit(resCode, { status: "ERR", err_code: errCodes.BAD_AUTH });
             return;
         }
 
-        const accessToken = await authenticator.registerNewUserSession(msg.username, msg.clientKey);
+        const accessToken = await authenticator.registerNewUserSession(msg.username);
 
-        sendMessage(socket, resCode, accessToken, { status: "OK", accessToken: accessToken });
+        sendMessage(socket, resCode, { status: "OK", accessToken: accessToken });
     });
 
     /** Requires access token. */
@@ -114,7 +93,7 @@ io.on('connection', (socket) => {
   
         const components = await compManager.getComponents();
 
-        sendMessage(socket, resCode, processed.msg.accessToken, { status: "OK", components: components });
+        sendMessage(socket, resCode, { status: "OK", components: components });
     });
 
     /** Required: {id: integer, status: "on" | "off"} */
@@ -134,7 +113,7 @@ io.on('connection', (socket) => {
             res = {status: "ERR", err_code: errCodes.INVALID_FORMAT};
         }
          
-        sendMessage(socket, resCode, processed.msg.accessToken, res);
+        sendMessage(socket, resCode, res);
         io.in(componentsRoom).emit(componentsChangeCode);
     });
 
@@ -146,7 +125,7 @@ io.on('connection', (socket) => {
   
         const success = await compManager.updateComponent(processed.msg.id, processed.msg.data);
         const res = (success) ? { status: "OK" } : {status: "ERR", err_code: errCodes.SERVER_ERR};
-        sendMessage(socket, resCode, processed.msg.accessToken, res);
+        sendMessage(socket, resCode, res);
         io.in(componentsRoom).emit(componentsChangeCode);
     });
 
@@ -158,7 +137,7 @@ io.on('connection', (socket) => {
   
         const id = await compManager.addComponent(processed.msg.data);
         const res = (id != undefined) ? { status: "OK", id: id} : {status: "ERR", err_code: errCodes.INVALID_FORMAT};
-        sendMessage(socket, resCode, processed.msg.accessToken, res);
+        sendMessage(socket, resCode, res);
         io.in(componentsRoom).emit(componentsChangeCode);
     });
 
@@ -170,7 +149,7 @@ io.on('connection', (socket) => {
   
         const success = await compManager.removeComponent(processed.msg.id);
         const res = (success) ? { status: "OK"} : {status: "ERR", err_code: errCodes.SERVER_ERR};
-        sendMessage(socket, resCode, processed.msg.accessToken, res);
+        sendMessage(socket, resCode, res);
         io.in(componentsRoom).emit(componentsChangeCode);
     });
 
@@ -186,11 +165,10 @@ io.on('connection', (socket) => {
         // processed = { msg: JSON, username: string}
         // ....
 
-        sendMessage(socket, resCode, processed.msg.accessToken, { status: "OK", msg: "example" }); // define endpoint specific response
+        sendMessage(socket, resCode, { status: "OK", msg: "example" }); // define endpoint specific response
     });
     //------END OF TEMPLATE-------
 });
-
 
 /**
  * 
@@ -200,68 +178,31 @@ io.on('connection', (socket) => {
  * @param {array} keys Keys that need to be present in the message.
  */
 async function processIncomingMsg(socket, resCode, msg, keys) {
-    // TODO: uncomment if using encryption
-    //msg = await decryptMessage(socket, resCode, msg);
-    if (!msg) return undefined;
-    msg = await checkJsonKeys(socket, resCode, JSON.stringify(msg), keys); // TODO: remove stringify if using encryption
-    if (!msg) return undefined;
     const username = await verifyToken(socket, resCode, msg.accessToken);
     if (!username) return undefined;
+
+    const keysOk = await checkJsonKeys(socket, resCode, msg, keys);
+    if (!keysOk) return undefined;
+    
     return { msg: msg, username: username };
 }
 
 /**
  * Converts the string message in JSON format and checks if it contains the compulsory keys.
  * 
- * @param {socket} socket Socket that received the request.
- * @param {string} resCode String used in emitting.
- * @param {string} msg Message to parse.
+ * @param {JSON} msg Message to parse.
  * @param {array} keys Keys that need to be present in the message.
- * @param {string} accessToken If it is defined the error response will be encrypted. Otherwise it will not be.
- * @returns {json} Parsed message if successful, or undefined if it couldn't be parsed.
+ * @returns {boolean} True if keys are correct, false if not.
  */
-async function checkJsonKeys(socket, resCode, msg, keys, accessToken = undefined) {
-    try {
-        msg = JSON.parse(msg);
-        if (!msg.hasOwnProperty("accessToken")) {
-            return await verifyToken(socket, resCode, undefined);
+async function checkJsonKeys(socket, resCode, msg, keys) {
+    for (const i in keys) {
+        if (!msg.hasOwnProperty(keys[i])) {
+            logger.error("Missing key (" + keys[i] + ") in: " + JSON.stringify(msg));
+            sendMessage(socket, resCode, { status: "ERR", err_code: errCodes.INVALID_FORMAT });
+            return false;
         }
-        for (const i in keys) {
-            if (!msg.hasOwnProperty(keys[i])) {
-                throw new Error("Missing key (" + keys[i] + ") in: " + JSON.stringify(msg));
-            }
-        }
-        return msg;
     }
-    catch (err) {
-        logger.error(err);
-        const res = { status: "ERR", err_code: errCodes.INVALID_FORMAT };
-        if (accessToken) {
-            sendMessage(socket, resCode, accessToken, res);
-        }
-        else {
-            socket.emit(resCode, res);
-        }
-        return undefined;
-    }
-}
-
-/**
- * Decrypt the incoming message.
- * 
- * @param {socket} socket Socket that received the request.
- * @param {string} responseCode String used in emitting.
- * @param {string} msg Base64 encoded message.
- */
-async function decryptMessage(socket, responseCode, msg) {
-    // TODO: uncomment if using encryption
-    //msg = await authenticator.decryptMessage(msg);
-
-    if (msg === undefined) {
-        socket.emit(responseCode, { status: "ERR", err_code: errCodes.BAD_ENCRYPT });
-        return undefined;
-    }
-    return msg;
+    return true;
 }
 
 /**
@@ -272,10 +213,7 @@ async function decryptMessage(socket, responseCode, msg) {
  * @param {string} accessToken User's access token.
  * @param {json} res Response to encrypt.
  */
-async function sendMessage(socket, resCode, accessToken, res) {
-    // TODO: uncomment to encrypt messages
-    //res = await authenticator.encryptMessage(accessToken, JSON.stringify(res));
-
+async function sendMessage(socket, resCode, res) {
     if (res === undefined) {
         socket.emit(resCode, { status: "ERR", err_code: errCodes.SERVER_ERR });
     }
@@ -312,14 +250,14 @@ async function verifyUser(userData) {
  * @param {string} accessToken Token send by the user.
  * @returns {string} Username associated with the token or undefined if token is invalid or missing.
  */
-async function verifyToken(socket, responseCode, accessToken) {
+async function verifyToken(socket, resCode, accessToken) {
     if (!accessToken) {
-        socket.emit(responseCode, { status: "ERR", err_code: errCodes.NO_AUTH });
+        sendMessage(socket, resCode, { status: "ERR", err_code: errCodes.NO_AUTH });
         return undefined;
     }
     const username = await authenticator.verifyToken(accessToken);
     if (!username) {
-        socket.emit(responseCode, { status: "ERR", err_code: errCodes.BAD_AUTH });
+        sendMessage(socket, resCode, { status: "ERR", err_code: errCodes.BAD_AUTH });
         return undefined;
     }
     return username;

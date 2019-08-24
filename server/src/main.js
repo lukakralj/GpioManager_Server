@@ -15,7 +15,7 @@ const nodeMailer = require('nodemailer');
 const cli = require('./cli');
 
 logger.info("Server has started.");
-// 'import' should already trigger socket initialisation
+// 'import' already triggers socket initialisation
 require('./socket-setup');
 
 logger.info("Connecting ngrok...");
@@ -109,7 +109,7 @@ async function sendEmail(html) {
 
     const receiverOptions = {
         from: transporter.options.auth.user,
-        to: "luka.kralj2@gmail.com",
+        to: config.email_to,
         subject: "Server configuration",
         html: html
     };
@@ -118,10 +118,10 @@ async function sendEmail(html) {
     let finished = false;
     await transporter.sendMail(receiverOptions, (err) => {
         if (err) {
-            console.log(err);
+            logger.error(err);
             successful = false;
         } else {
-            console.log("Email sent successfully to: " + receiverOptions.to + ".");
+            logger.info("Email sent successfully to: " + receiverOptions.to + ".");
             successful = true;
         }
         transporter.close();

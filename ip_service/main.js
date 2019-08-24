@@ -11,7 +11,6 @@
  * @version 1.0
  */
 
-const ngrok = require('ngrok');
 const nodeMailer = require("nodemailer");
 const email_config = require('./email-config.json');
 const exec = require('child_process').exec;
@@ -20,13 +19,9 @@ const publicIpCmd = "curl ifconfig.me";
 const localIpCmd = "hostname -I";
 const memesCmd = "curl https://www.memedroid.com/memes/top/week/";
 
-let ngrokUrl = undefined;
-
 execute();
 
 async function execute() {
-    // await connectNgrok(); TODO: connect ssh ngrok from server directly
-
     let publicIP = undefined;
     let localIP = undefined;
     do {
@@ -52,7 +47,6 @@ async function execute() {
 ${url}</a><br><br>
 Local IP: ${localIP}<br>
 Public IP: ${publicIP}<br>
-Ngrok URL: ${ngrokUrl}<br>
 </body>
 </html>
     `;
@@ -65,21 +59,6 @@ Ngrok URL: ${ngrokUrl}<br>
     while (!sent);
 }
 
-async function connectNgrok() {
-    try {
-        ngrokUrl = await ngrok.connect({
-           "authtoken": "6dKHte5MWU4cd9396rRnt_89P36zVMzLjcW4AHvxjkc",
-            "proto": "tcp",
-            "addr": 4487
-        });
-        console.log("Ngrok connected: " + ngrokUrl);
-    }
-    catch(err){
-        console.log(err);
-        console.log("Ngrok could not start.");
-    }
-}
-
 /**
  * Executes the given command and returns the response of the command.
  * 
@@ -90,7 +69,7 @@ async function connectNgrok() {
 async function cmdOutput(cmd, timeout = 10000) {
     let ip = undefined;
     let finished = false;
-    const proc = exec(cmd, (err, stdout, stderr) => {
+    exec(cmd, (err, stdout, stderr) => {
         if (err) {
             console.log(err)
             console.log(stderr);
@@ -124,7 +103,7 @@ async function getUrl() {
     const jpegs = matchAll(jpegRegex, page);
 
     let url = undefined;
-    const i = randInt(0, 3);
+    let i = randInt(0, 3);
 
     if (i == 0 || gifs.length == 0) {
         // use jpeg
@@ -156,9 +135,10 @@ async function getUrl() {
  */
 function matchAll(regExp, str) {
     const matches = [];
-    while (true) {
+    let finished = false;
+    while (!finished) {
         const match = regExp.exec(str);
-        if (match === null) break;
+        finished = (match === null);
         // Add capture of group 1 to `matches`
         matches.push(match[0]);
     }
@@ -190,7 +170,7 @@ async function sendEmail(html) {
 
     const receiverOptions = {
         from: transporter.options.auth.user,
-        to: "luka.kralj2@gmail.com",
+        to: email_config.email_to,
         subject: "IP configuration for Dragonboard",
         html: html
     };

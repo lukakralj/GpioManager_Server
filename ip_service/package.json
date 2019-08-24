@@ -1,7 +1,7 @@
 {
   "name": "ip_service",
   "version": "1.0.0",
-  "description": "A service that send an email about the IP information of the DragonBoard.",
+  "description": "A service that sends an email about the IP information of the DragonBoard.",
   "main": "main.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -10,7 +10,6 @@
   "author": "Luka Kralj",
   "license": "MIT",
   "dependencies": {
-    "ngrok": "^3.1.1",
     "nodemailer": "^6.1.1"
   }
 }
