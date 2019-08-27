@@ -1,24 +1,14 @@
 {
-  "name": "smart-home",
+  "name": "gpio-manager-server",
   "version": "1.0.0",
   "description": "Server side of the application that will be running on the DragonBoard.",
   "main": "src/main.js",
   "scripts": {
     "eslint": "eslint",
-    "start": "sudo node src/main.js",
-    "test": "nodemon --exec \"nyc --reporter=html --reporter=text mocha --recursive\""
+    "start": "sudo node src/main.js"
   },
   "author": "Luka Kralj",
   "license": "MIT",
-  "devDependencies": {
-    "chai": "^4.2.0",
-    "eslint": "^5.16.0",
-    "mocha": "^5.2.0",
-    "mocha-sinon": "^2.1.0",
-    "nodemon": "^1.18.10",
-    "nyc": "^14.1.0",
-    "rewire": "^4.0.1"
-  },
   "dependencies": {
     "dateformat": "^3.0.3",
     "express": "^4.16.4",

@@ -103,7 +103,6 @@ function sleep(ms) {
     });
 }
 
-
 async function sendEmail(html) {
     const transporter = nodeMailer.createTransport(config.transporter);
 
