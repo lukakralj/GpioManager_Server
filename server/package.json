@@ -7,6 +7,10 @@
     "eslint": "eslint",
     "start": "sudo node src/main.js"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lukakralj/IoTControlServer.git"
+  },
   "author": "Luka Kralj",
   "license": "MIT",
   "dependencies": {
