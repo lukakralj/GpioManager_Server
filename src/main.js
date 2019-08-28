@@ -18,6 +18,7 @@ logger.info("Server has started.");
 // 'import' already triggers socket initialisation
 require('./socket-setup');
 
+// TODO: add https
 logger.info("Connecting ngrok...");
 let ngrokUrl = undefined;
 (async function () {

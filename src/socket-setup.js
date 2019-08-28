@@ -153,6 +153,16 @@ io.on('connection', (socket) => {
         io.in(componentsRoom).emit(componentsChangeCode);
     });
 
+    socket.on("logout", async (msg) => {
+        const resCode = "logoutRes";
+        const processed = await processIncomingMsg(socket, resCode, msg, []);
+        if (!processed) return;
+
+        authenticator.removeUserSession(processed.msg.accessToken);
+
+        sendMessage(socket, resCode, { status: "OK" });
+    });
+
     //------------------------------------------------------
     //      TEMPLATE FOR NEW ENDPOINTS
     //------------------------------------------------------
