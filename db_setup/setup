@@ -6,4 +6,4 @@ mysql -u root -p < schema.sql &&
 echo Schema loaded. &&
 echo Inserting data... &&
 mysql -u root -p < insert.sql &&
-echo Data inserted. Setup complete. &&
+echo Data inserted. Setup complete.

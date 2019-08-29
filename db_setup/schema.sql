@@ -5,8 +5,8 @@
 -- @author Luka Kralj
 -- ====================================================
 
--- TODO: remove
-DELETE DATABASE IF EXISTS GpioManagerDB;
+-- TODO: remove 
+DROP DATABASE IF EXISTS GpioManagerDB;
 DROP USER IF EXISTS GpioManagerAdmin;
 
 CREATE DATABASE IF NOT EXISTS GpioManagerDB;
