@@ -163,6 +163,16 @@ io.on('connection', (socket) => {
         sendMessage(socket, resCode, { status: "OK" });
     });
 
+    socket.on("refreshToken", async (msg) => {
+        const resCode = "refreshTokenRes";
+        const processed = await processIncomingMsg(socket, resCode, msg, []); // insert any request specific keys (accessToken already included)
+        if (!processed) return;
+
+        // processIncomingMsg() already refreshes token validity.
+
+        sendMessage(socket, resCode, { status: "OK" }); // define endpoint specific response
+    });
+
     //------------------------------------------------------
     //      TEMPLATE FOR NEW ENDPOINTS
     //------------------------------------------------------
