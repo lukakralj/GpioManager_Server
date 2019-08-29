@@ -20,10 +20,23 @@ problem in case the server crashes.
 ## Setup
 
 1. Install nodejs (v10) and npm (v6).
+
+If you have a MySql server already installed on the Dragonboard skip steps 2-6.
+
 2. Install MariaDB: `sudo apt-get install mariadb-server` (same usage as for mysql-server).
-3. Create and populate a database: run `./path/to/db_setup/setup`. Provide password 
+3. Run: `sudo mysql_secure_installation` and follow the instructions given.
+4. Login to MySql server: `sudo mysql -u root -p`. Enter root password.
+5. Run:
+    GRANT ALL PRIVILEGES on *.* to 'root'@'localhost' IDENTIFIED BY '<password>';
+    FLUSH PRIVILEGES;
+Read more [here](https://stackoverflow.com/questions/28068155/access-denied-for-user-rootlocalhost-using-password-yes-after-new-instal).
+6. Restart MySql server: `sudo service mysql restart`.
+7. Create and populate a database: run `./path/to/db_setup/setup`. Provide password 
 for MySql root. The script will import all the setup files.
-4. In project folder run `npm i`.
+
+N.B. If `setup` file is not executable, run `chmod u+x ./path/to/db_setup/setup` and try again.
+
+8. In project folder run `npm i`.
 
 ## Starting the server
 To start the server run `npm start`. Provide your root password if prompted. The server needs to run
