@@ -77,7 +77,8 @@ module.exports.Gpio = class Gpio {
         if (this.direction == DIR_OUT) {
             throw new Error("Invalid operation: calling readValue on an 'OUT' pin. Use isOn instead.");
         }
-        return await cmdOutput(`cat ${await getPinValuePath(this.pinNo)}`);
+        let output = await cmdOutput(`cat ${await getPinValuePath(this.pinNo)}`);
+	return Number(output.charAt(0));
     }
 
     async unexport() {
