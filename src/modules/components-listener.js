@@ -8,6 +8,7 @@ module.exports = {
 
 const logger = require('./../util/logger');
 const cli = require('./../cli');
+const compManager = require('./components-manager');
 
 cli.registerCommand("stop", onStop);
 
@@ -15,10 +16,10 @@ let prevValues = {};
 let stop = false;
 async function startListener(onChangeCallback) {
     while (!stop) {
-        const newValues = compManager.getINComponentsValues();
+        const newValues = await compManager.getINComponentsValues();
         let changeOccurred = false;
-        logger.debug(`Comparing values: ${JSON.stringify(prevValues)} and ${JSON.stringify(newValues)}`)
         if (JSON.stringify(prevValues) !== JSON.stringify(newValues)) {
+	    logger.debug(`Comparing values: ${JSON.stringify(prevValues)} and ${JSON.stringify(newValues)}`)
             prevValues = newValues;
             changeOccurred = true;
         }
@@ -30,7 +31,7 @@ async function startListener(onChangeCallback) {
     }
 }
 
-function onStop() {
+async function onStop() {
     stop = true;
 }
 
