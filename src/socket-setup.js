@@ -16,11 +16,6 @@ called from (socket) => {} function (top level of io.on()). The file with
 components setup function imports a module with setup-util functions (processIncomingMessage etc.).
 */
 
-//----- SOCKET IO ------
-const app = require('express')();
-const server = require('http').Server(app);
-const io = require('socket.io')(server);
-
 //------ UTILS -------
 const logger = require('./util/logger');
 const config = require('../config/config.json');
@@ -29,6 +24,21 @@ const authenticator = require('./util/authenticator');
 const queryController = require('./util/db/query-controller');
 const compManager = require('./modules/components-manager');
 const cli = require('./cli');
+const path = require("path");
+
+//----- SOCKET IO ------
+logger.info("Initialising Socket.IO...");
+const fs = require('fs');
+logger.info("Reading SSL certificates...");
+const options = {
+    key: fs.readFileSync(path.resolve(__dirname, './../config/server.key')),
+    cert: fs.readFileSync(path.resolve(__dirname, './../config/server.crt'))
+};
+logger.info("Certificates loaded.");
+logger.info("Creating HTTPS server...");
+const server = require('https').createServer(options);
+const io = require('socket.io')(server);
+logger.info("Socket.IO finished initialising.")
 
 //----- SETUP ----
 server.listen(config.ngrokOpts.addr, () => {// port same as in ngrok
