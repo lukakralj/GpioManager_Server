@@ -41,6 +41,12 @@ cli.registerCommand("stop", onStop);
 const componentsChangeCode = "componentsChange";
 const componentsRoom = "componentsRoom";
 
+// start components listener
+(require('./modules/components-listener')).startListener(() => {
+    io.in(componentsRoom).emit(componentsChangeCode);
+});
+
+
 io.on('connection', (socket) => {
     logger.info(`Socket ${socket.id} connected`);
 
@@ -208,7 +214,7 @@ async function processIncomingMsg(socket, resCode, msg, keys) {
 }
 
 /**
- * Converts the string message in JSON format and checks if it contains the compulsory keys.
+ * Checks if the request received contains the compulsory keys.
  * 
  * @param {JSON} msg Message to parse.
  * @param {array} keys Keys that need to be present in the message.
@@ -226,12 +232,11 @@ async function checkJsonKeys(socket, resCode, msg, keys) {
 }
 
 /**
- * Encrypts the message for the specific client and sends it.
+ * Send the server response.
  * 
  * @param {socket} socket Socket that will send the response.
  * @param {string} responseCode String used in emitting.
- * @param {string} accessToken User's access token.
- * @param {json} res Response to encrypt.
+ * @param {json} res Server response.
  */
 async function sendMessage(socket, resCode, res) {
     if (res === undefined) {

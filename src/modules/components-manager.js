@@ -3,7 +3,8 @@ module.exports = {
     toggleComponent,
     updateComponent,
     addComponent,
-    removeComponent
+    removeComponent,
+    getINComponentsValues
 }
 
 const gpio = require('./Gpio');
@@ -69,6 +70,18 @@ async function getComponents() {
         res.push(toAdd);
     }
     return res;
+}
+
+async function getINComponentsValues() {
+    const mapIdVal = {};
+    for (const id in components) {
+        const c = components[id];
+        if (c.direction == gpio.DIR_IN) {
+            const val = await c.gpio.readValue();
+            mapIdVal[id] = val;
+        }
+    }
+    return mapIdVal;
 }
 
 async function toggleComponent(id, status) {

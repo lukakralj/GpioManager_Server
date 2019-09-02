@@ -11,7 +11,7 @@ network which enables the user to access the connected devices from anywhere.
 ## Configuration
 There are three configuration files.
 - **`config.json`**:  This is the main configuration file. Set `"ngrokOpts"` to have any parameters you wish
-for establishing an ngrok connection. In addition, **use your own email in `"transporter"` field and change `"email_to"` field to the email you want to receive the server URL on.**
+for establishing an ngrok connection. In addition, **use your own email in `"transporter"` field and change `"email_to"` field to the email you want to receive the server URL on.** I suggest using an email where two-step authentication is not used otherwise you are likely to experience problems.
 - `db-config.json`: You do not need to change this as it depends on data that was set in `schema.sql`.
 - `logger.json`: This configuration file controls how the server logs will look like and where they will be shown.
 I suggest setting `"fileOutput"` option to `true` when running the server on startup as this will help identify the 
