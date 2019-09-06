@@ -11,6 +11,7 @@ module.exports = {
     getUser,
     getComponents,
     addComponent,
+    addUser,
     updateComponent,
     removeComponent
 };
@@ -54,6 +55,13 @@ async function getComponents() {
 async function addComponent(physicalPin, direction, name, description=undefined) {
     let sql = "INSERT INTO Components(physicalPin,direction,name,description) VALUES (?,?,?,?)";
     sql = mysql.format(sql, [physicalPin, direction, name, description]);
+
+    return await db.insertQuery(sql);
+}
+
+async function addUser(username, hash, salt, iterations) {
+    let sql = "INSERT INTO Users VALUES (?,?,?,?)";
+    sql = mysql.format(sql, [username, hash, salt, iterations]);
 
     return await db.insertQuery(sql);
 }

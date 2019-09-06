@@ -52,6 +52,8 @@ start the server manually - in some cases this eliminates the need for using a l
 
 ## Usage
 
+To create new user run `npm run newuser`.
+
 When the server is started, it will email you its URL. You can send requests via this URL. If you are using GpioManager_App (see my other repo), use this URL to connect to the Dragonboard.
 
 **_N.B._ On the Dragonboard ommunicate with the server via the terminal. This will allow you to stop the server properly. Exiting with a Ctrl+C might lead to some files not being cleaned up.**

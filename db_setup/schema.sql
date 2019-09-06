@@ -42,10 +42,8 @@ CREATE TABLE Components (
 CREATE TABLE Users (
     username VARCHAR(100),
     hashedPassword VARCHAR(255) NOT NULL,
-    isAdmin ENUM("yes", "no") NOT NULL DEFAULT "no",
     salt VARCHAR(255) NOT NULL,
     iterations INTEGER NOT NULL,
-    recoveryEmail VARCHAR(100) NOT NULL,
     PRIMARY KEY (username)
 );
 
