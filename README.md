@@ -1,5 +1,5 @@
 # Gpio Manager (Server)
-Server that allows remote control of GPIO pins on the DragonBoard 410c through a mobile app.
+Server that allows remote control of GPIO pins on the DragonBoard 410c through a [mobile app](https://github.com/lukakralj/GpioManager_App).
 
 ## Aim
 The purpose of this server is to be able to receive remote requests for managing
@@ -7,7 +7,7 @@ the GPIO pins on the DragonBoard (DB). This then enables a remote control of all
 devices that are currently connected to GPIOs on the DB without using a laptop.
 The server allows connections from outside the board's network which enables the 
 user to access the connected devices from anywhere. The server is notifying all the connected
-devices about any updates in real time, so the data on all the devices is consistent at any time.
+devices about any updates in real time, so the data on all the devices is consistent at all times.
 
 Below you can see a sample setup and how this setup reflects in the [mobile app](https://github.com/lukakralj/GpioManager_App) that connects to this server:
 
@@ -31,7 +31,7 @@ problem in case the server crashes.
 If you have a MySql server already installed on the Dragonboard skip steps 2-6.
 
 2. Install MariaDB: `sudo apt-get install mariadb-server` (same usage as for mysql-server).
-3. Run: `sudo mysql_secure_installation` and follow the instructions given.
+3. Run: `sudo mysql_secure_installation` and follow the instructions on the screen.
 4. Login to MySql server: `sudo mysql -u root -p`. Enter root password.
 5. Run: `GRANT ALL PRIVILEGES on *.* to 'root'@'localhost' IDENTIFIED BY '<password>'; FLUSH PRIVILEGES;`
 Read more about why to do this [here](https://stackoverflow.com/questions/28068155/access-denied-for-user-rootlocalhost-using-password-yes-after-new-instal).
@@ -47,14 +47,14 @@ The server is now ready to run.
 
 ### User setup
 There is one user already registered on the system. Username is 'admin', and password is 'admin'. To remove this user
-log into MySql server `mysql -u root -p GpioManagerDB`, and then run `DELETE FROM Users`.
+log into MySql server (run `mysql -u root -p GpioManagerDB`), and then run `DELETE FROM Users WHERE username='admin'`.
 
 If you wish to create a new user, from the project folder, run `npm run newuser`.
 This will start a script that will prompt you for user details. If the details entered are correct the user will
 be stored on the system and you will be able to use these details to log in.
 
 ## Starting the server
-To start the server run `npm start`. Provide your root password if prompted. The server needs to run
+To start the server run `npm start`. Provide your root password, if prompted. The server needs to run
 as root to be able to access and modify GPIOs.
 
 To start the server every time the DB boots edit `crontab` file.
@@ -72,3 +72,8 @@ When the server is started, it will email you its URL. You can send requests via
 There is a simple CLI implemented for communication with the server. Type 'help' in the server STDIN to see the valid commands.
 
 **_N.B._ On the DragonBoard communicate with the server via the terminal (it's STDIN). This will allow you to stop the server properly. Exiting with a Ctrl+C might lead to some files not being cleaned up.**
+
+### Feedback
+Whether you liked the project or not, I would be very thankful for any feedback, suggestions or comments on the project.
+
+*Feel free to [email](mailto:luka.kralj2@gmail.com) me!*
