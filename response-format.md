@@ -35,6 +35,5 @@ The client should also re-login if their public key changes.
 # Error codes
 NO_AUTH
 BAD_AUTH
-BAD_ENCRYPT
 INVALID_FORMAT
-LED_ERROR
+SERVER_ERR

@@ -9,8 +9,6 @@
 module.exports = {
     NO_AUTH: "NO_AUTH", 
     BAD_AUTH: "BAD_AUTH",
-    BAD_ENCRYPT: "BAD_ENCRYPT",
     INVALID_FORMAT: "INVALID_FORMAT",
     SERVER_ERR: "SERVER_ERR",
-    LED_ERROR: "LED_ERROR"
 }

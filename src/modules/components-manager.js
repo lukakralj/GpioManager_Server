@@ -27,6 +27,11 @@ const components = {};
 init();
 
 cli.registerCommand("stop", onStop);
+cli.registerCommand("components", printComponents);
+
+async function printComponents() {
+    console.log(components);
+}
 
 async function init() {
     const comp = await queryController.getComponents();
