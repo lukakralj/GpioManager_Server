@@ -6,6 +6,8 @@
  * @version 1.0
  */
 
+(require('./util/logger')).changeOption("consoleOutput", false);
+
 const authenticator = require('./util/authenticator');
 const query_controller = require('./util/db/query-controller');
 var prompt = require('prompt');
