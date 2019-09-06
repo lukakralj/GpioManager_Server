@@ -1,5 +1,5 @@
 /**
- * This module provides the functionalities that concern data encryption and security.
+ * This module provides the functionalities that enable user authentication.
  * 
  * @module authenticator
  * @author Luka Kralj

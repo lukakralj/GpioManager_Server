@@ -8,14 +8,6 @@
  * @version 1.0
  */
 
-/*
-REFACTOR IDEA: 
-Put all groups of setup functions in a separate file. For example, all components
-endpoints are put in one function in a different file. This function is then 
-called from (socket) => {} function (top level of io.on()). The file with 
-components setup function imports a module with setup-util functions (processIncomingMessage etc.).
-*/
-
 //------ UTILS -------
 const logger = require('./util/logger');
 const config = require('../config/config.json');
@@ -45,7 +37,6 @@ const componentsRoom = "componentsRoom";
 (require('./modules/components-listener')).startListener(() => {
     io.in(componentsRoom).emit(componentsChangeCode);
 });
-
 
 io.on('connection', (socket) => {
     logger.info(`Socket ${socket.id} connected`);
@@ -80,18 +71,20 @@ io.on('connection', (socket) => {
         socket.join(componentsRoom);
         logger.info(`Socket ${socket.id} joined ${componentsRoom}.`);
 
-        socket.emit(resCode, { status: "OK"});
+        sendMessage(socket, resCode, { status: "OK"});
     });
 
+    /** Requires access token. */
     socket.on("leaveComponentsRoom", async () => {
         const resCode = "leaveComponentsRoomRes";
   
         socket.leave(componentsRoom);
         logger.info(`Socket ${socket.id} left ${componentsRoom}.`);
 
-        socket.emit(resCode, { status: "OK"});
+        sendMessage(socket, resCode, { status: "OK"});
     });
 
+    /** Requires access token. */
     socket.on("components", async (msg) => {
         const resCode = "componentsRes";
         const processed = await processIncomingMsg(socket, resCode, msg, []); 
@@ -159,6 +152,7 @@ io.on('connection', (socket) => {
         io.in(componentsRoom).emit(componentsChangeCode);
     });
 
+    /** Requires access token. */
     socket.on("logout", async (msg) => {
         const resCode = "logoutRes";
         const processed = await processIncomingMsg(socket, resCode, msg, []);
@@ -169,6 +163,7 @@ io.on('connection', (socket) => {
         sendMessage(socket, resCode, { status: "OK" });
     });
 
+    /** Requires access token. */
     socket.on("refreshToken", async (msg) => {
         const resCode = "refreshTokenRes";
         const processed = await processIncomingMsg(socket, resCode, msg, []); // insert any request specific keys (accessToken already included)
@@ -182,7 +177,7 @@ io.on('connection', (socket) => {
     //------------------------------------------------------
     //      TEMPLATE FOR NEW ENDPOINTS
     //------------------------------------------------------
-    socket.on("[temp]", async (msg) => {
+    /*socket.on("[temp]", async (msg) => {
         const resCode = "[temp]Res";
         const processed = await processIncomingMsg(socket, resCode, msg, []); // insert any request specific keys (accessToken already included)
         if (!processed) return;
@@ -192,16 +187,18 @@ io.on('connection', (socket) => {
         // ....
 
         sendMessage(socket, resCode, { status: "OK", msg: "example" }); // define endpoint specific response
-    });
+    });*/
     //------END OF TEMPLATE-------
 });
 
 /**
+ * Verifies the token and the JSON keys needed.
  * 
  * @param {socket} socket Socket that received the request.
  * @param {string} resCode String used in emitting.
  * @param {string} msg Message to parse.
  * @param {array} keys Keys that need to be present in the message.
+ * @returns {JSON} Checked message and username: { msg: msg, username: username }
  */
 async function processIncomingMsg(socket, resCode, msg, keys) {
     const username = await verifyToken(socket, resCode, msg.accessToken);

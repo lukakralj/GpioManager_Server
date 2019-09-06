@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# This scirpt takes care of the DB initialisation.
+#
+# Author: Luka Kralj
+
 cd "$(dirname "$0")" &&
 echo Loading schema... &&
 mysql -u root -p < schema.sql &&

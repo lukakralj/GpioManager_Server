@@ -7,7 +7,7 @@
  * overridden. Both 'subscribed' actions will be executed (like in C# - function 
  * subscription).
  * 
- * @module 
+ * @module cli
  * @author Luka Kralj
  * @version 1.0
  */

@@ -1,12 +1,15 @@
 /**
  * Listens to changes in IN components and notifies about the change.
+ * 
+ * @module components-listener
+ * @author Luka Kralj
+ * @version 1.0
  */
 
 module.exports = {
     startListener
 }
 
-const logger = require('./../util/logger');
 const cli = require('./../cli');
 const compManager = require('./components-manager');
 
@@ -14,12 +17,17 @@ cli.registerCommand("stop", onStop);
 
 let prevValues = {};
 let stop = false;
+
+/**
+ * Start the listener and decide what happens when a change occurs.
+ * 
+ * @param {function} onChangeCallback Invoked when the change in IN components values occurs.
+ */
 async function startListener(onChangeCallback) {
     while (!stop) {
         const newValues = await compManager.getINComponentsValues();
         let changeOccurred = false;
         if (JSON.stringify(prevValues) !== JSON.stringify(newValues)) {
-	    logger.debug(`Comparing values: ${JSON.stringify(prevValues)} and ${JSON.stringify(newValues)}`)
             prevValues = newValues;
             changeOccurred = true;
         }

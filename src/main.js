@@ -2,7 +2,7 @@
  * This module provides entry and exit point of the application.
  * It takes care of the correct setup and shutdown.
  * 
- * @module 
+ * @module main
  * @author Luka Kralj
  * @version 1.0
  */
@@ -18,7 +18,6 @@ logger.info("Server has started.");
 // 'import' already triggers socket initialisation
 require('./socket-setup');
 
-// TODO: add https
 logger.info("Connecting ngrok...");
 let ngrokUrl = undefined;
 (async function () {
@@ -43,14 +42,12 @@ cli.registerCommand("exit", onExit);
 
 /** Block Ctrl+C plus graceful shutdown. */
 process.on('SIGINT', async () => {
-    await onStop();
-    onExit();
+    logger.warning("Please use CLI to stop the server! Type 'stop' first and then 'exit'.");
 });
 
 /** Graceful shutdown. */
 process.on('SIGTERM', async () => {
-    await onStop();
-    onExit();
+    logger.warning("Please use CLI to stop the server! Type 'stop' first and then 'exit'.");
 });
 
 

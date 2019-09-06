@@ -1,3 +1,12 @@
+/**
+ * Provides methods to manipulate the components. The data is cached as well
+ * as updated in the database.
+ * 
+ * @module components-manager
+ * @author Luka Kralj
+ * @version 1.0
+ */
+
 module.exports = {
     getComponents,
     toggleComponent,
@@ -33,6 +42,10 @@ async function printComponents() {
     console.log(components);
 }
 
+/**
+ * Loads all the components, if any, from the database and creates a lookup table
+ * for faster access.
+ */
 async function init() {
     const comp = await queryController.getComponents();
 
@@ -55,6 +68,11 @@ async function init() {
     }
 }
 
+/**
+ * Retrieves the current state off all the components.
+ * 
+ * @returns {Array] Array of all the components.
+ */
 async function getComponents() {
     const res = [];
     for (const id in components) {
@@ -77,6 +95,11 @@ async function getComponents() {
     return res;
 }
 
+/**
+ * Combines the values of all the IN components.
+ * 
+ * @returns {Array} Array of all the values.
+ */
 async function getINComponentsValues() {
     const mapIdVal = {};
     for (const id in components) {
@@ -89,6 +112,13 @@ async function getINComponentsValues() {
     return mapIdVal;
 }
 
+/**
+ * Change the state of the OUT component.
+ * 
+ * @param {Number} id ID of the component.
+ * @param {string} status Either "on" or "off".
+ * @returns {boolean} True if operation was successful, false if not.
+ */
 async function toggleComponent(id, status) {
     if (components[id].direction != gpio.DIR_OUT || (status != "on" && status != "off")) {
         throw new Error("Invalid toggle request.");
@@ -107,6 +137,13 @@ async function toggleComponent(id, status) {
     return false;
 }
 
+/**
+ * Update component.
+ * 
+ * @param {Number} id ID of the component.
+ * @param {JSON} data Data that we want to update.
+ * @returns {boolean} True if operation was successful, false if not.
+ */
 async function updateComponent(id, data) {
     // Prepare data for update.
     if (!data) data = {};
@@ -127,6 +164,13 @@ async function updateComponent(id, data) {
     return await executeUpdate(id, data);
 }
 
+/**
+ * This method actually executed the update.
+ * 
+ * @param {Number} id ID of the component.
+ * @param {JSON} data Data that we want to update.
+ * @returns {boolean} True if operation was successful, false if not.
+ */
 async function executeUpdate(id, data) {
     const c = components[id];
 
@@ -157,6 +201,12 @@ async function executeUpdate(id, data) {
     return true;
 }
 
+/**
+ * Creates a new component with the given data.
+ * 
+ * @param {JSON} data Component data.
+ * @returns {Number} The ID assigned to the new component.
+ */
 async function addComponent(data) {
     if (!data.physicalPin || !data.direction || !data.name) {
         return undefined;
@@ -186,6 +236,12 @@ async function addComponent(data) {
     return id;
 }
 
+/**
+ * Removes the component.
+ * 
+ * @param {Number} id ID of the component.
+ * @returns {boolean} True if operation was successful, false if not.
+ */
 async function removeComponent(id) {
     try {
         if (components[id].direction == gpio.DIR_OUT) {
@@ -203,6 +259,9 @@ async function removeComponent(id) {
     return true;
 }
 
+/**
+ * Must be called before the server exits to export all the pins.
+ */
 async function onStop() {
     for (const id in components) {
         try {

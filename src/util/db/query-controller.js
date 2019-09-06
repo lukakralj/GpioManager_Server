@@ -1,10 +1,9 @@
 /**
  * This module enables execution of the basic queries.
  * 
+ * @module db-controller
  * @author Luka Kralj
  * @version 1.0
- * 
- * @module db-controller
  */
 
 module.exports = {

@@ -24,7 +24,7 @@ properties: {
         username: {
             description: usernamePrompt,
             pattern: /^[a-zA-Z0-9]+/,
-            message: 'Username must be only letters or numbers.',
+            message: 'Username must be only letters and numbers.',
             required: true
         },
         password: {
@@ -44,6 +44,9 @@ properties: {
 
 getData();
 
+/**
+ * Retrieves the needed data. Recursively calls itself if data is invalid.
+ */
 function getData() {
     prompt.get(promptSchema, async (err, result) => {
         let usernameOk = await checkUsername(result.username);
@@ -73,6 +76,12 @@ function getData() {
     });
 }
 
+/**
+ * Verify that the username is unique and long enough.
+ * 
+ * @param {string} username Username entered.
+ * @returns {boolean} True if username is ok, false if not.
+ */
 async function checkUsername(username) {
     username = username.trim();
     if (username.length < 5) {
@@ -87,6 +96,13 @@ async function checkUsername(username) {
     return true;
 }
 
+/**
+ * Verify that the passwords match and that they are long enough.
+ * 
+ * @param {string} password First password entered.
+ * @param {string} passwordAgain Second password entered.
+ * @returns {boolean} True if password is ok, false if not.
+ */
 async function checkPassword(password, passwordAgain) {
     if (password.length < 5) {
         console.log("Password is too short.");
@@ -98,4 +114,3 @@ async function checkPassword(password, passwordAgain) {
     }
     return true;
 }
-
