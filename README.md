@@ -1,5 +1,5 @@
 # Gpio Manager (Server)
-Server that allows remote control of GPIO pins on the DragonBoard 410c through a [mobile app](https://github.com/lukakralj/GpioManager_App).
+Server that allows remote control of GPIO pins on the DragonBoard 410c through a [mobile app](https://github.com/lukakralj/GpioManager_App). You can read more about this project in [this blog post](https://lukakralj.com/gpio-manager/).
 
 ## Aim
 The purpose of this server is to be able to receive remote requests for managing
@@ -76,4 +76,4 @@ There is a simple CLI implemented for communication with the server. Type 'help'
 ### Feedback
 Whether you liked the project or not, I would be very thankful for any feedback, suggestions or comments on the project.
 
-*Feel free to [email](mailto:luka.kralj2@gmail.com) me!*
+*Feel free to [email](mailto:luka.kralj.cs@gmail.com) me!*
