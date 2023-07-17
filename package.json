@@ -17,7 +17,7 @@
   "dependencies": {
     "dateformat": "^3.0.3",
     "express": "^4.17.3",
-    "mysql": "^2.17.1",
+    "mysql": "^2.18.0",
     "ngrok": "^5.0.0-beta.2",
     "nodemailer": "^6.6.1",
     "prompt": "^1.0.0",
